@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Partnership Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--cream:#FAF7F2;--ink:#1A1714;--rose:#C4606A;--rose-light:#F2DDE0;--rose-mid:#E8A8AE;--sage:#6B8F71;--sage-light:#E2EDE4;--warm:#E8E0D5;--muted:#8A7F78;--card:#FFFFFF;--shadow:0 2px 16px rgba(26,23,20,0.08);--r:16px}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.nav{display:flex;border-top:1px solid var(--warm);background:var(--cream);padding:8px 0 4px;position:sticky;bottom:0;z-index:10}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border:none;background:none;cursor:pointer;color:var(--muted);font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:.5px;text-transform:uppercase;transition:color .2s}
+.nav-btn.active{color:var(--rose)}
+.nav-icon{font-size:18px;line-height:1}
+.page{display:none;flex:1;padding:24px 20px 80px;animation:fadeIn .25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.page-title{font-family:'Lora',serif;font-size:26px;font-weight:600;line-height:1.2;margin-bottom:4px}
+.page-subtitle{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5}
+.card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin-bottom:14px}
+.card-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.metric-card{background:var(--card);border-radius:var(--r);padding:18px 16px;box-shadow:var(--shadow);text-align:center}
+.metric-val{font-family:'Lora',serif;font-size:32px;font-weight:600;color:var(--rose)}
+.metric-lbl{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.8px}
+.score-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.score-name{font-size:12px;font-weight:500;width:52px;flex-shrink:0}
+.score-bar-wrap{flex:1;height:8px;background:var(--warm);border-radius:4px;overflow:hidden}
+.score-bar{height:8px;border-radius:4px}
+.score-val{font-size:13px;font-weight:600;width:36px;text-align:right;flex-shrink:0}
+.response-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.resp-card{background:var(--cream);border-radius:10px;padding:10px 12px}
+.resp-who{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.resp-q{font-family:'Lora',serif;font-style:italic;font-size:13px;color:var(--muted);margin-bottom:8px;line-height:1.4}
+.resp-a{font-size:13px;line-height:1.4;color:var(--ink)}
+.week-label{font-family:'Lora',serif;font-size:14px;font-weight:600;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--warm)}
+.loading{text-align:center;padding:40px 20px;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--warm);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:32px 20px;color:var(--muted);font-size:14px;line-height:1.7}
+.summary-text{font-family:'Lora',serif;font-style:italic;font-size:15px;line-height:1.7;color:var(--ink)}
+.action-btn{width:100%;padding:12px;background:none;border:1.5px solid var(--rose-mid);border-radius:10px;color:var(--rose);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;margin-top:12px}
+.action-btn:hover{background:var(--rose-light)}
+.action-btn:disabled{opacity:.4;cursor:not-allowed}
+input[type=text],input[type=password],textarea.url-input{width:100%;border:1.5px solid var(--warm);border-radius:10px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--cream);color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:8px;resize:none}
+input:focus,textarea.url-input:focus{border-color:var(--rose-mid)}
+.save-btn{width:100%;padding:14px;background:var(--sage);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:4px}
+.sage-banner{background:var(--sage-light);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--sage);line-height:1.5;margin-bottom:14px;display:flex;gap:8px}
+.refresh-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1.5px solid var(--warm);border-radius:8px;background:none;cursor:pointer;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s;margin-bottom:16px}
+.refresh-btn:hover{border-color:var(--rose-mid);color:var(--rose)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;z-index:999;transition:transform .3s ease;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.col-map{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.col-item{font-size:12px;background:var(--cream);border-radius:8px;padding:8px 10px;color:var(--muted)}
+.col-item strong{display:block;color:var(--ink);font-size:11px;margin-bottom:2px}
+.raw-box{background:var(--cream);border:1px solid var(--warm);border-radius:8px;padding:10px;font-size:11px;font-family:monospace;color:var(--muted);overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;margin-top:8px}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot-ok{background:#6B8F71}.dot-err{background:#C4606A}.dot-wait{background:#E8E0D5}.dot-spin{background:#E8A8AE;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.diag-step{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div id="page-dashboard" class="page active">
+    <div class="eyebrow">Partnership Check-in</div>
+    <div class="page-title">Dashboard</div>
+    <div class="page-subtitle">Live data from your Google Sheet</div>
+    <div id="dashboard-content"></div>
+  </div>
+
+  <div id="page-history" class="page">
+    <div class="eyebrow">Together</div>
+    <div class="page-title">Response history</div>
+    <div class="page-subtitle">Side-by-side answers over time</div>
+    <div id="history-content"></div>
+  </div>
+
+  <div id="page-trends" class="page">
+    <div class="eyebrow">Over time</div>
+    <div class="page-title">Trends</div>
+    <div class="page-subtitle">How your scores move week by week</div>
+    <div id="trends-content"></div>
+  </div>
+
+  <div id="page-settings" class="page">
+    <div class="eyebrow">Configuration</div>
+    <div class="page-title">Settings</div>
+    <div class="page-subtitle">Paste your Google Sheet CSV link and map columns</div>
+
+    <div class="sage-banner"><span>✅</span><span>No proxy needed — this version reads directly from your published Google Sheet CSV.</span></div>
+
+    <div class="card">
+      <div class="card-label">Google Sheet CSV URL</div>
+      <textarea class="url-input" id="csv-url-input" rows="3" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?…&output=csv"></textarea>
+      <div class="card-label" style="margin-top:8px">Anthropic API key (optional — for AI summaries)</div>
+      <input type="password" id="anthropic-key-input" placeholder="sk-ant-...">
+      <button class="save-btn" onclick="saveSettings()">Save &amp; load data</button>
+    </div>
+
+    <!-- COLUMN MAPPING -->
+    <div class="card" id="col-map-card" style="display:none">
+      <div class="card-label">Detected columns — check these match your sheet</div>
+      <div id="col-map-display"></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5">If any columns are wrong, adjust the mapping below and hit Save again.</div>
+      <div style="margin-top:12px">
+        <div class="card-label">Column name for "Who are you?"</div>
+        <input type="text" id="col-who" placeholder="Who are you?">
+        <div class="card-label">Column name for "Connected" score</div>
+        <input type="text" id="col-connected" placeholder="From 0 to 10, how connected…">
+        <div class="card-label">Column name for "Communication" score</div>
+        <input type="text" id="col-communication" placeholder="From 0 to 10, how would you rate…">
+        <div class="card-label">Column name for "Overall" score</div>
+        <input type="text" id="col-overall" placeholder="Overall how are you feeling…">
+        <div class="card-label">Column name for "Partner diff" (text)</div>
+        <input type="text" id="col-partnerdiff" placeholder="Is there anything that your partner…">
+        <div class="card-label">Column name for "Self diff" (text)</div>
+        <input type="text" id="col-selfdiff" placeholder="Is there anything that you could…">
+        <div class="card-label">Column name for "Looking forward" (text)</div>
+        <input type="text" id="col-lookforward" placeholder="What are you looking forward…">
+        <button class="save-btn" onclick="saveSettings()">Save column mapping</button>
+      </div>
+    </div>
+
+    <!-- DIAGNOSTICS -->
+    <div class="card">
+      <div class="card-label">Diagnostics</div>
+      <div class="diag-step"><span class="status-dot dot-wait" id="d1-dot"></span><div>CSV URL entered<div style="font-size:11px;color:var(--muted)" id="d1-sub">—</div></div></div>
+      <div class="diag-step"><span class="status-dot dot-wait" id="d2-dot"></span><div>Sheet reachable<div style="font-size:11px;color:var(--muted)" id="d2-sub">—</div></div></div>
+      <div class="diag-step"><span class="status-dot dot-wait" id="d3-dot"></span><div>Columns detected<div style="font-size:11px;color:var(--muted)" id="d3-sub">—</div></div></div>
+      <div class="diag-step"><span class="status-dot dot-wait" id="d4-dot"></span><div>Rows parsed<div style="font-size:11px;color:var(--muted)" id="d4-sub">—</div></div></div>
+      <button class="action-btn" onclick="runDiag()">🔍 Run diagnostics</button>
+      <div id="raw-wrap" style="display:none">
+        <div style="font-size:11px;color:var(--muted);margin-top:12px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px">First row of CSV data</div>
+        <div class="raw-box" id="raw-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span>Overview</button>
+    <button class="nav-btn" onclick="showPage('history',this)"><span class="nav-icon">💬</span>History</button>
+    <button class="nav-btn" onclick="showPage('trends',this)"><span class="nav-icon">📈</span>Trends</button>
+    <button class="nav-btn" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DEFAULT_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAjNyAvySSOIjN_8gSBvtv9LmLPm_VsqB18R_9Oc9CJFv0l06zE7-ZbkmrJy0704jRgsCjsJXFlgZ9/pub?gid=2016305011&single=true&output=csv';
+
+let cfg = {
+  csvUrl: DEFAULT_CSV,
+  anthropicKey: '',
+  cols: {
+    who: '',
+    connected: '',
+    communication: '',
+    overall: '',
+    partnerDiff: '',
+    selfDiff: '',
+    lookForward: ''
+  }
+};
+let subs = [];
+let charts = {};
+
+const Q = {
+  connected:     { label: 'How connected did you feel?',                    type: 'scale' },
+  communication: { label: 'How was your communication?',                    type: 'scale' },
+  partnerDiff:   { label: 'What could your partner have done differently?',  type: 'text'  },
+  selfDiff:      { label: 'What could you have done differently?',           type: 'text'  },
+  lookForward:   { label: 'What are you looking forward to together?',       type: 'text'  },
+  overall:       { label: 'Overall feeling about the relationship?',         type: 'scale' },
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+function init() {
+  try { const r = localStorage.getItem('pviz3'); if (r) cfg = Object.assign({}, cfg, JSON.parse(r)); } catch(e) {}
+  document.getElementById('csv-url-input').value = cfg.csvUrl || DEFAULT_CSV;
+  document.getElementById('anthropic-key-input').value = cfg.anthropicKey || '';
+  populateColInputs();
+  if (cfg.csvUrl) fetchAndRender(); else noData();
+}
+
+function populateColInputs() {
+  const m = cfg.cols;
+  document.getElementById('col-who').value         = m.who          || '';
+  document.getElementById('col-connected').value   = m.connected    || '';
+  document.getElementById('col-communication').value = m.communication || '';
+  document.getElementById('col-overall').value     = m.overall      || '';
+  document.getElementById('col-partnerdiff').value = m.partnerDiff  || '';
+  document.getElementById('col-selfdiff').value    = m.selfDiff     || '';
+  document.getElementById('col-lookforward').value = m.lookForward  || '';
+}
+
+function saveSettings() {
+  cfg.csvUrl       = document.getElementById('csv-url-input').value.trim();
+  cfg.anthropicKey = document.getElementById('anthropic-key-input').value.trim();
+  cfg.cols = {
+    who:           document.getElementById('col-who').value.trim(),
+    connected:     document.getElementById('col-connected').value.trim(),
+    communication: document.getElementById('col-communication').value.trim(),
+    overall:       document.getElementById('col-overall').value.trim(),
+    partnerDiff:   document.getElementById('col-partnerdiff').value.trim(),
+    selfDiff:      document.getElementById('col-selfdiff').value.trim(),
+    lookForward:   document.getElementById('col-lookforward').value.trim(),
+  };
+  localStorage.setItem('pviz3', JSON.stringify(cfg));
+  showToast('Saved 🌿');
+  fetchAndRender();
+}
+
+// ── FETCH CSV ──────────────────────────────────────────────────────────────
+function noData() {
+  const h = `<div class="empty">📊<br><br><strong>No data yet</strong><br><br>Go to <strong>Settings</strong> and paste your Google Sheet CSV URL.</div>`;
+  ['dashboard-content','history-content','trends-content'].forEach(id => document.getElementById(id).innerHTML = h);
+}
+
+async function fetchAndRender() {
+  ['dashboard-content','history-content','trends-content'].forEach(id =>
+    document.getElementById(id).innerHTML = `<div class="loading"><div class="spinner"></div>Loading from Google Sheets…</div>`);
+  try {
+    const result = await new Promise((resolve, reject) => {
+      Papa.parse(cfg.csvUrl, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: resolve,
+        error: reject
+      });
+    });
+    if (!result.data || !result.data.length) throw new Error('No rows found in sheet');
+    // Auto-detect columns on first load
+    if (!cfg.cols.who) autoDetectCols(result.meta.fields || []);
+    subs = parseRows(result.data);
+    showColMap(result.meta.fields || []);
+    renderDash(); renderHist(); renderTrends();
+  } catch(e) {
+    const msg = `<div class="empty">⚠️ Could not load sheet.<br><br>${e.message}<br><br>Go to <strong>Settings → Run diagnostics</strong> for details.</div>`;
+    ['dashboard-content','history-content','trends-content'].forEach(id => document.getElementById(id).innerHTML = msg);
+  }
+}
+
+// ── AUTO DETECT COLUMNS ────────────────────────────────────────────────────
+function autoDetectCols(fields) {
+  const find = (keywords) => fields.find(f => keywords.some(k => f.toLowerCase().includes(k))) || '';
+  cfg.cols.who           = find(['who are you']);
+  cfg.cols.connected     = find(['connected']);
+  cfg.cols.communication = find(['communication']);
+  cfg.cols.overall       = find(['overall']);
+  cfg.cols.partnerDiff   = find(['partner could', 'partner have done']);
+  cfg.cols.selfDiff      = find(['you could', 'you have done']);
+  cfg.cols.lookForward   = find(['looking forward']);
+  localStorage.setItem('pviz3', JSON.stringify(cfg));
+  populateColInputs();
+}
+
+function showColMap(fields) {
+  const card = document.getElementById('col-map-card');
+  card.style.display = 'block';
+  const c = cfg.cols;
+  const row = (label, val) => `<div class="col-item"><strong>${label}</strong>${val || '<span style="color:var(--rose)">not detected</span>'}</div>`;
+  document.getElementById('col-map-display').innerHTML = `<div class="col-map">
+    ${row('Who', c.who)}
+    ${row('Connected', c.connected ? c.connected.slice(0,30)+'…' : '')}
+    ${row('Communication', c.communication ? c.communication.slice(0,30)+'…' : '')}
+    ${row('Overall', c.overall ? c.overall.slice(0,30)+'…' : '')}
+    ${row('Partner diff', c.partnerDiff ? c.partnerDiff.slice(0,30)+'…' : '')}
+    ${row('Looking forward', c.lookForward ? c.lookForward.slice(0,30)+'…' : '')}
+  </div>`;
+}
+
+// ── PARSE ROWS ─────────────────────────────────────────────────────────────
+function parseRows(rows) {
+  const c = cfg.cols;
+  return rows.map(r => {
+    const whoRaw = (r[c.who] || '').trim();
+    const who = whoRaw === 'A' || whoRaw.toLowerCase().includes('julia') ? 'julia'
+              : whoRaw === 'B' || whoRaw.toLowerCase().includes('marco') ? 'marco'
+              : null;
+    if (!who) return null;
+    // Timestamp — try common column names
+    const ts = r['Submission date'] || r['Timestamp'] || r['timestamp'] || r['Date'] || new Date().toISOString();
+    return {
+      who,
+      submittedAt: ts,
+      answers: {
+        connected:     c.connected     ? Number(r[c.connected])     : undefined,
+        communication: c.communication ? Number(r[c.communication]) : undefined,
+        overall:       c.overall       ? Number(r[c.overall])       : undefined,
+        partnerDiff:   c.partnerDiff   ? r[c.partnerDiff]           : undefined,
+        selfDiff:      c.selfDiff      ? r[c.selfDiff]              : undefined,
+        lookForward:   c.lookForward   ? r[c.lookForward]           : undefined,
+      }
+    };
+  }).filter(Boolean);
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function wkKey(d) {
+  const dt = new Date(d), dy = dt.getDay(), diff = dt.getDate() - dy + (dy===0?-6:1);
+  return new Date(new Date(d).setDate(diff)).toISOString().split('T')[0];
+}
+function grouped() {
+  const m = {};
+  subs.forEach(s => { const k = wkKey(s.submittedAt); if(!m[k]) m[k]=[]; m[k].push(s); });
+  return m;
+}
+function avg(who, k) {
+  const v = subs.filter(s => s.who===who && s.answers[k]!==undefined && !isNaN(s.answers[k])).map(s=>s.answers[k]);
+  return v.length ? v.reduce((a,b)=>a+b,0)/v.length : null;
+}
+function bar(val, color) {
+  const pct = Math.min(100, Math.max(0, val*10));
+  return `<div style="display:flex;align-items:center;gap:8px">
+    <div style="flex:1;height:5px;background:var(--warm);border-radius:3px">
+      <div style="height:5px;background:${color||'var(--rose)'};border-radius:3px;width:${pct}%"></div>
+    </div>
+    <span style="font-size:13px;font-weight:600">${val}/10</span>
+  </div>`;
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDash() {
+  const el = document.getElementById('dashboard-content');
+  if (!subs.length) { el.innerHTML=`<div class="empty">No responses found.<br><br>Make sure Julia and Marco have submitted the Tally form, and that the column mapping in Settings is correct.</div>`; return; }
+  const g = grouped(), weeks = Object.keys(g).sort();
+  const paired = weeks.filter(w => g[w].find(s=>s.who==='julia') && g[w].find(s=>s.who==='marco'));
+  const latest = g[weeks[weeks.length-1]] || [];
+  const jL = latest.find(s=>s.who==='julia'), mL = latest.find(s=>s.who==='marco');
+  const sk = ['connected','communication','overall'];
+
+  const scRows = (j,m) => sk.map(k => {
+    const jv=j?.answers[k], mv=m?.answers[k];
+    if ((jv===undefined||isNaN(jv)) && (mv===undefined||isNaN(mv))) return '';
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-style:italic">${Q[k].label}</div>
+      ${jv!==undefined&&!isNaN(jv)?`<div class="score-row"><span class="score-name" style="color:var(--rose)">Julia</span><div class="score-bar-wrap"><div class="score-bar" style="width:${jv*10}%;background:var(--rose)"></div></div><span class="score-val">${jv}/10</span></div>`:''}
+      ${mv!==undefined&&!isNaN(mv)?`<div class="score-row"><span class="score-name" style="color:var(--sage)">Marco</span><div class="score-bar-wrap"><div class="score-bar" style="width:${mv*10}%;background:var(--sage)"></div></div><span class="score-val">${mv}/10</span></div>`:''}
+    </div>`;
+  }).join('');
+
+  const avgs = sk.map(k => {
+    const ja=avg('julia',k), ma=avg('marco',k);
+    if (!ja&&!ma) return '';
+    return `<div style="margin-bottom:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px;font-style:italic">${Q[k].label}</div>
+      ${ja?`<div class="score-row"><span class="score-name" style="color:var(--rose)">Julia</span><div class="score-bar-wrap"><div class="score-bar" style="width:${ja*10}%;background:var(--rose)"></div></div><span class="score-val">${ja.toFixed(1)}</span></div>`:''}
+      ${ma?`<div class="score-row"><span class="score-name" style="color:var(--sage)">Marco</span><div class="score-bar-wrap"><div class="score-bar" style="width:${ma*10}%;background:var(--sage)"></div></div><span class="score-val">${ma.toFixed(1)}</span></div>`:''}
+    </div>`;
+  }).join('');
+
+  const ls = scRows(jL, mL);
+  el.innerHTML = `<button class="refresh-btn" onclick="fetchAndRender()">↻ Refresh</button>
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-val">${subs.length}</div><div class="metric-lbl">Submissions</div></div>
+      <div class="metric-card"><div class="metric-val">${paired.length}</div><div class="metric-lbl">Paired weeks</div></div>
+    </div>
+    ${ls?`<div class="card"><div class="card-label">Latest week</div>${ls}</div>`:''}
+    ${avgs?`<div class="card"><div class="card-label">All-time averages</div>${avgs}</div>`:''}
+    <div class="card">
+      <div class="card-label">AI insight</div>
+      <div id="ai-text" class="summary-text" style="color:var(--muted);font-size:13px">Tap below to generate a pattern insight from your responses.</div>
+      <button class="action-btn" id="ai-btn" onclick="genSummary()">✨ Generate insight</button>
+    </div>`;
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────
+function renderHist() {
+  const el = document.getElementById('history-content');
+  if (!subs.length) { el.innerHTML=`<div class="empty">No responses yet.</div>`; return; }
+  const g = grouped(), weeks = Object.keys(g).sort().reverse();
+  let h = `<button class="refresh-btn" onclick="fetchAndRender()">↻ Refresh</button>`;
+  weeks.forEach(w => {
+    const ws=g[w], j=ws.find(s=>s.who==='julia'), m=ws.find(s=>s.who==='marco');
+    const dt = new Date(w).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+    h += `<div class="week-label">Week of ${dt}</div>`;
+    if (!j||!m) {
+      const done=j||m;
+      h += `<div class="card" style="padding:14px 16px;margin-bottom:8px"><div style="font-size:13px;color:var(--muted)">Waiting for ${!j?'Julia':'Marco'} to complete this week.</div>`;
+      if (done) Object.keys(Q).forEach(k => {
+        const a=done.answers[k]; if(a===undefined||a==='') return;
+        h+=`<div style="margin-top:10px"><div class="resp-q">${Q[k].label}</div><div class="resp-a">${Q[k].type==='scale'?bar(a):a}</div></div>`;
+      });
+      h += `</div>`;
+    } else {
+      Object.keys(Q).forEach(k => {
+        const ja=j.answers[k], ma=m.answers[k];
+        if ((ja===undefined||ja==='') && (ma===undefined||ma==='')) return;
+        h+=`<div class="card" style="padding:14px 16px;margin-bottom:8px">
+          <div class="resp-q">${Q[k].label}</div>
+          <div class="response-pair">
+            <div class="resp-card"><div class="resp-who" style="color:var(--rose)">Julia</div><div class="resp-a">${ja!==undefined&&ja!==''?(Q[k].type==='scale'?bar(ja,'#C4606A'):ja):'—'}</div></div>
+            <div class="resp-card"><div class="resp-who" style="color:var(--sage)">Marco</div><div class="resp-a">${ma!==undefined&&ma!==''?(Q[k].type==='scale'?bar(ma,'#6B8F71'):ma):'—'}</div></div>
+          </div>
+        </div>`;
+      });
+    }
+  });
+  el.innerHTML = h;
+}
+
+// ── TRENDS ─────────────────────────────────────────────────────────────────
+function renderTrends() {
+  const el = document.getElementById('trends-content');
+  const g = grouped(), weeks = Object.keys(g).sort();
+  if (weeks.length < 2) { el.innerHTML=`<div class="empty">You need at least 2 weeks of data to see trends.</div>`; return; }
+  const labels = weeks.map(w => new Date(w).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
+  const sk = ['connected','communication','overall'];
+  el.innerHTML = `<button class="refresh-btn" onclick="fetchAndRender()">↻ Refresh</button>`
+    + sk.map(k=>`<div class="card" style="margin-bottom:14px"><div class="card-label">${Q[k].label}</div><canvas id="ch-${k}" height="160"></canvas></div>`).join('');
+  setTimeout(() => {
+    sk.forEach(k => {
+      const cv = document.getElementById('ch-'+k); if(!cv) return;
+      if (charts[k]) charts[k].destroy();
+      charts[k] = new Chart(cv, {
+        type: 'line',
+        data: { labels, datasets: [
+          { label:'Julia', data:weeks.map(w=>g[w].find(s=>s.who==='julia')?.answers[k]??null), borderColor:'#C4606A', backgroundColor:'rgba(196,96,106,0.08)', tension:.4, pointRadius:4, pointBackgroundColor:'#C4606A', spanGaps:true },
+          { label:'Marco', data:weeks.map(w=>g[w].find(s=>s.who==='marco')?.answers[k]??null), borderColor:'#6B8F71', backgroundColor:'rgba(107,143,113,0.08)', tension:.4, pointRadius:4, pointBackgroundColor:'#6B8F71', spanGaps:true }
+        ]},
+        options:{ responsive:true, maintainAspectRatio:false,
+          scales:{ y:{min:0,max:10,ticks:{stepSize:2,font:{size:11}},grid:{color:'rgba(0,0,0,.04)'}}, x:{ticks:{font:{size:11}},grid:{display:false}} },
+          plugins:{ legend:{labels:{font:{size:11},boxWidth:10}} }
+        }
+      });
+    });
+  }, 50);
+}
+
+// ── DIAGNOSTICS ────────────────────────────────────────────────────────────
+function dot(n,s,sub) {
+  document.getElementById('d'+n+'-dot').className='status-dot dot-'+s;
+  if (sub!==undefined) document.getElementById('d'+n+'-sub').textContent=sub;
+}
+async function runDiag() {
+  [1,2,3,4].forEach(n=>dot(n,'wait','checking…'));
+  document.getElementById('raw-wrap').style.display='none';
+  const url = document.getElementById('csv-url-input').value.trim();
+  if (!url) { dot(1,'err','No URL entered'); [2,3,4].forEach(n=>dot(n,'wait','—')); return; }
+  dot(1,'ok', url.slice(0,40)+'…');
+  dot(2,'spin','fetching…');
+  try {
+    const result = await new Promise((resolve,reject) => {
+      Papa.parse(url, { download:true, header:true, skipEmptyLines:true, complete:resolve, error:reject });
+    });
+    dot(2,'ok','Sheet loaded successfully');
+    const fields = result.meta.fields || [];
+    dot(3,'ok',`${fields.length} columns: ${fields.slice(0,3).join(', ')}…`);
+    document.getElementById('raw-wrap').style.display='block';
+    document.getElementById('raw-box').textContent = 'Columns found:\n' + fields.join('\n') + '\n\nFirst row:\n' + JSON.stringify(result.data[0], null, 2);
+    if (!result.data.length) { dot(4,'err','No rows of data found'); return; }
+    autoDetectCols(fields);
+    const parsed = parseRows(result.data);
+    dot(4,'ok',`${parsed.length} responses parsed — Julia: ${parsed.filter(s=>s.who==='julia').length}, Marco: ${parsed.filter(s=>s.who==='marco').length}`);
+    showToast('All checks passed ✓');
+    fetchAndRender();
+  } catch(e) {
+    dot(2,'err','Could not load sheet — '+e.message);
+    [3,4].forEach(n=>dot(n,'wait','—'));
+    document.getElementById('raw-wrap').style.display='block';
+    document.getElementById('raw-box').textContent = String(e);
+  }
+}
+
+// ── AI SUMMARY ─────────────────────────────────────────────────────────────
+async function genSummary() {
+  if (!cfg.anthropicKey) { showToast('Add your Anthropic API key in Settings'); return; }
+  const btn=document.getElementById('ai-btn'), txt=document.getElementById('ai-text');
+  btn.disabled=true; btn.textContent='Generating…'; txt.textContent='';
+  const data = subs.slice(-10).map(s =>
+    `${s.who} (${new Date(s.submittedAt).toLocaleDateString('en-GB')}): connected=${s.answers.connected??'?'}/10, communication=${s.answers.communication??'?'}/10, overall=${s.answers.overall??'?'}/10${s.answers.lookForward?`, looking forward to: "${s.answers.lookForward}"`:''}${s.answers.partnerDiff?`, partner feedback: "${s.answers.partnerDiff}"`:''}` ).join('\n');
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':cfg.anthropicKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:`You are a warm relationship coach. Based on these recent weekly check-in scores for Julia and Marco, write 2-3 warm sentences noting patterns and one gentle suggestion.\n\n${data}`}]})
+    });
+    const d = await r.json();
+    txt.textContent = d.content?.[0]?.text || 'Could not generate insight.';
+  } catch(e) { txt.textContent = 'Could not reach Anthropic API. Check your key in Settings.'; }
+  btn.disabled=false; btn.textContent='✨ Regenerate insight';
+}
+
+function showPage(n,b) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active'); b.classList.add('active');
+}
+function showToast(m) {
+  const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+init();
+</script>
+</body>
+</html>
