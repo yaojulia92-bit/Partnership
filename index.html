@@ -260,26 +260,41 @@ h1,h2,h3,.headline{font-family:'Manrope',sans-serif}
 
   <!-- Heatmap -->
   <section id="metrics-heatmap" class="bg-surface-container-high rounded-xl p-5 border border-outline-variant/30 hidden">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="font-headline font-bold text-lg">Yearly check-in map</h3>
-      <div class="flex items-center gap-2 text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">
-        <span>Less</span>
-        <div class="flex gap-1">
-          <div class="w-3 h-3 rounded-sm" style="background:#1c2b3e"></div>
-          <div class="w-3 h-3 rounded-sm" style="background:#4a2040"></div>
-          <div class="w-3 h-3 rounded-sm" style="background:#8a1535"></div>
-          <div class="w-3 h-3 rounded-sm" style="background:#C21445"></div>
-          <div class="w-3 h-3 rounded-sm" style="background:#e8507a"></div>
-        </div>
-        <span>More</span>
+    <div class="mb-1">
+      <h3 class="font-headline font-bold text-lg">Overall feeling — <span id="heatmap-year" class="text-on-surface-variant font-medium"></span></h3>
+      <p class="text-[11px] text-on-surface-variant mt-0.5">Average "overall feeling about the relationship" score per week</p>
+    </div>
+    <!-- Legend -->
+    <div class="flex items-center gap-2 mt-3 mb-4">
+      <span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">No data</span>
+      <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#1c2b3e;border:1px solid rgba(255,255,255,0.1)"></div>
+      <div class="flex-1 flex items-center gap-1">
+        <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#4a1535"></div>
+        <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#7a1a40"></div>
+        <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#A81840"></div>
+        <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#C21445"></div>
+        <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#e03060"></div>
+        <div class="w-3 h-3 rounded-sm flex-shrink-0" style="background:#e8507a"></div>
+      </div>
+      <div class="text-[10px] text-on-surface-variant flex items-center gap-1">
+        <span>1</span>
+        <div class="w-12 h-1.5 rounded-full" style="background:linear-gradient(to right,#4a1535,#e8507a)"></div>
+        <span>10</span>
       </div>
     </div>
-    <div id="heatmap-month-labels" class="flex text-[9px] text-on-surface-variant mb-1 pl-6"></div>
-    <div class="flex gap-1">
-      <div class="flex flex-col text-[9px] text-on-surface-variant pr-1 pt-0.5" style="gap:5px">
-        <span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span>
+    <!-- Year selector -->
+    <div class="flex gap-2 mb-3" id="heatmap-year-tabs"></div>
+    <!-- Month labels -->
+    <div class="overflow-x-auto">
+      <div style="min-width:fit-content">
+        <div id="heatmap-month-labels" class="flex text-[9px] text-on-surface-variant mb-1" style="padding-left:22px;gap:0"></div>
+        <div class="flex gap-1">
+          <div class="flex flex-col text-[9px] text-on-surface-variant flex-shrink-0" style="gap:3px;padding-top:1px;width:20px">
+            <span>Mon</span><span style="height:11px"></span><span>Wed</span><span style="height:11px"></span><span>Fri</span><span style="height:11px"></span><span style="height:11px"></span>
+          </div>
+          <div id="heatmap-grid" class="flex gap-0.5"></div>
+        </div>
       </div>
-      <div id="heatmap-grid" class="flex gap-0.5 overflow-x-auto pb-1 flex-1"></div>
     </div>
     <div id="heatmap-stats" class="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-outline-variant/20"></div>
   </section>
@@ -735,121 +750,176 @@ function renderMetrics(){
 }
 
 function renderHeatmap(submissions){
-  // Build a map of dateStr -> avg overall score
+  // Build dayAvg map: dateStr -> avg overall score
   const dayMap={};
   submissions.forEach(s=>{
     const v=s.answers.overall;
     if(v===undefined||isNaN(v))return;
     const d=new Date(s.submittedAt);
-    const key=d.toISOString().split('T')[0];
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     if(!dayMap[key])dayMap[key]=[];
     dayMap[key].push(Number(v));
   });
   const dayAvg={};
-  Object.keys(dayMap).forEach(k=>{
-    const vals=dayMap[k];
-    dayAvg[k]=vals.reduce((a,b)=>a+b,0)/vals.length;
-  });
+  Object.keys(dayMap).forEach(k=>{const v=dayMap[k];dayAvg[k]=v.reduce((a,b)=>a+b,0)/v.length;});
 
-  // Build 52-week grid ending today
+  // Determine available years
   const today=new Date();
-  const end=new Date(today);
-  // align to Saturday end of week
-  end.setDate(end.getDate()+(6-end.getDay()));
-  const start=new Date(end);
-  start.setDate(start.getDate()-52*7+1);
+  const allYears=[...new Set(Object.keys(dayAvg).map(k=>k.slice(0,4)))].map(Number).sort();
+  if(!allYears.length)allYears.push(today.getFullYear());
+  if(!allYears.includes(today.getFullYear()))allYears.push(today.getFullYear());
 
-  // Month labels
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthLabels=document.getElementById('heatmap-month-labels');
-  monthLabels.innerHTML='';
-  let lastMonth=-1;
-  const labelCols=[];
-  for(let w=0;w<52;w++){
-    const weekStart=new Date(start);weekStart.setDate(weekStart.getDate()+w*7);
-    const m=weekStart.getMonth();
-    if(m!==lastMonth){labelCols.push({col:w,month:months[m]});lastMonth=m;}
-  }
-  // Render month labels spaced by column
-  let html='';
-  for(let i=0;i<labelCols.length;i++){
-    const gap=i===0?labelCols[0].col:(labelCols[i].col-labelCols[i-1].col-1);
-    if(gap>0)html+=`<span style="min-width:${gap*14}px;display:inline-block"></span>`;
-    html+=`<span style="min-width:14px;display:inline-block">${labelCols[i].month}</span>`;
-  }
-  monthLabels.innerHTML=html;
+  // Year tabs
+  const tabs=document.getElementById('heatmap-year-tabs');
+  tabs.innerHTML=allYears.map(y=>
+    `<button onclick="drawHeatmapYear(${y})" id="htab-${y}" class="px-3 py-1 rounded-full text-xs font-bold transition-colors ${y===today.getFullYear()?'bg-[#C21445] text-white':'bg-surface-variant text-on-surface-variant'}">${y}</button>`
+  ).join('');
 
-  // Color scale: 0=no data, 1-4=low, 5-6=mid, 7-8=good, 9-10=great
+  drawHeatmapYear(today.getFullYear());
+}
+
+function drawHeatmapYear(year){
+  const today=new Date();
+  // Update active tab
+  document.querySelectorAll('[id^="htab-"]').forEach(b=>{
+    b.className=b.id===`htab-${year}`?'px-3 py-1 rounded-full text-xs font-bold bg-[#C21445] text-white':'px-3 py-1 rounded-full text-xs font-bold bg-surface-variant text-on-surface-variant';
+  });
+  document.getElementById('heatmap-year').textContent=year;
+
+  // Build dayAvg again from subs (re-use global)
+  const dayMap={};
+  subs.forEach(s=>{
+    const v=s.answers.overall;
+    if(v===undefined||isNaN(v))return;
+    const d=new Date(s.submittedAt);
+    if(d.getFullYear()!==year)return;
+    const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    if(!dayMap[key])dayMap[key]=[];
+    dayMap[key].push(Number(v));
+  });
+  const dayAvg={};
+  Object.keys(dayMap).forEach(k=>{const v=dayMap[k];dayAvg[k]=v.reduce((a,b)=>a+b,0)/v.length;});
+
+  // Grid: Jan 1 to Dec 31
+  const jan1=new Date(year,0,1);
+  const dec31=new Date(year,11,31);
+
+  // Start from the Monday on or before Jan 1
+  const startOffset=(jan1.getDay()+6)%7; // 0=Mon..6=Sun
+  const gridStart=new Date(jan1);
+  gridStart.setDate(gridStart.getDate()-startOffset);
+
+  // End on Sunday on or after Dec 31
+  const endOffset=(7-(dec31.getDay()+1)%7)%7;
+  const gridEnd=new Date(dec31);
+  gridEnd.setDate(gridEnd.getDate()+endOffset);
+
+  const totalWeeks=Math.round((gridEnd-gridStart)/(7*86400000))+1;
+  const CELL=11; // px per cell
+  const GAP=2;
+
   function scoreColor(val){
     if(val===null)return'#1c2b3e';
-    if(val<4)return'#4a2040';
-    if(val<6)return'#8a1535';
-    if(val<8)return'#C21445';
+    if(val<2)return'#3a1020';
+    if(val<4)return'#5a1530';
+    if(val<6)return'#8a1840';
+    if(val<7.5)return'#C21445';
+    if(val<9)return'#d93060';
     return'#e8507a';
   }
 
-  // Render grid: 52 columns x 7 rows
-  const grid=document.getElementById('heatmap-grid');
-  let gridHtml='';
-  let totalDays=0,checkinDays=0,bestStreak=0,currentStreak=0,streak=0;
-  const allDates=[];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  for(let w=0;w<52;w++){
-    gridHtml+='<div class="flex flex-col gap-0.5">';
+  // Month label positions: find which week column each month starts in
+  const monthCols={};
+  for(let w=0;w<totalWeeks;w++){
+    const d=new Date(gridStart);d.setDate(d.getDate()+w*7);
+    const m=d.getMonth();
+    if(monthCols[m]===undefined&&d.getFullYear()===year)monthCols[m]=w;
+  }
+
+  // Render month labels
+  let labelHtml='';
+  for(let m=0;m<12;m++){
+    const col=monthCols[m];
+    if(col===undefined)continue;
+    const prevCol=m===0?0:monthCols[m-1]||0;
+    const leftPx=col*(CELL+GAP);
+    labelHtml+=`<span style="position:absolute;left:${leftPx}px;font-size:9px;color:rgba(196,200,189,0.7);font-weight:700">${months[m]}</span>`;
+  }
+  document.getElementById('heatmap-month-labels').innerHTML=`<div style="position:relative;height:14px;width:${totalWeeks*(CELL+GAP)}px">${labelHtml}</div>`;
+
+  // Render grid
+  let gridHtml='';
+  let checkinDays=0;
+  const allDates=[];
+  const isFuture=d=>d>today;
+  const isThisYear=d=>d.getFullYear()===year;
+
+  for(let w=0;w<totalWeeks;w++){
+    gridHtml+=`<div style="display:flex;flex-direction:column;gap:${GAP}px">`;
     for(let d=0;d<7;d++){
-      const date=new Date(start);date.setDate(date.getDate()+w*7+d);
-      if(date>today){gridHtml+='<div class="w-3 h-3 rounded-sm" style="background:transparent"></div>';continue;}
-      const key=date.toISOString().split('T')[0];
+      const date=new Date(gridStart);date.setDate(date.getDate()+w*7+d);
+      const inYear=isThisYear(date);
+      const future=isFuture(date);
+      if(!inYear||future){
+        gridHtml+=`<div style="width:${CELL}px;height:${CELL}px;border-radius:2px;background:transparent"></div>`;
+        continue;
+      }
+      const key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
       const val=dayAvg[key]!==undefined?dayAvg[key]:null;
       const color=scoreColor(val);
-      const label=val!==null?`${key}: ${val.toFixed(1)}/10`:key;
-      gridHtml+=`<div class="w-3 h-3 rounded-sm cursor-pointer transition-opacity hover:opacity-70" style="background:${color}" title="${label}"></div>`;
-      totalDays++;
+      const tip=val!==null?`${key}: ${val.toFixed(1)}/10 overall`:key+' (no check-in)';
+      gridHtml+=`<div style="width:${CELL}px;height:${CELL}px;border-radius:2px;background:${color};cursor:pointer;transition:opacity .15s" title="${tip}" onmouseover="this.style.opacity=0.7" onmouseout="this.style.opacity=1"></div>`;
       allDates.push({key,val});
       if(val!==null)checkinDays++;
     }
     gridHtml+='</div>';
   }
-  grid.innerHTML=gridHtml;
+  document.getElementById('heatmap-grid').innerHTML=`<div style="display:flex;gap:${GAP}px">${gridHtml}</div>`;
 
-  // Streak calculation
-  const sortedDates=allDates.filter(d=>d.val!==null).map(d=>d.key).sort();
-  let maxStreak=0,cur=0,prevDate=null;
-  sortedDates.forEach(k=>{
-    const d=new Date(k);
-    if(prevDate){
-      const diff=(d-prevDate)/86400000;
-      if(diff<=7){cur++;} else {cur=1;}
-    } else {cur=1;}
+  // Streak: consecutive weeks with at least one check-in
+  const weekSet=new Set(allDates.filter(d=>d.val!==null).map(d=>{
+    const dt=new Date(d.key);
+    const mon=new Date(dt);mon.setDate(dt.getDate()-((dt.getDay()+6)%7));
+    return mon.toISOString().split('T')[0];
+  }));
+  const sortedWeeks=[...weekSet].sort();
+  let maxStreak=0,cur=0;
+  sortedWeeks.forEach((w,i)=>{
+    if(i===0){cur=1;}
+    else{
+      const prev=new Date(sortedWeeks[i-1]),curr=new Date(w);
+      const diff=(curr-prev)/86400000;
+      cur=diff<=7?cur+1:1;
+    }
     if(cur>maxStreak)maxStreak=cur;
-    prevDate=d;
   });
-  // Current streak (weeks back from now)
+  // Current streak
   let curStreak=0;
-  for(let i=sortedDates.length-1;i>=0;i--){
-    const d=new Date(sortedDates[i]);
-    const diffDays=(today-d)/86400000;
-    if(diffDays<=14){curStreak++;} else break;
+  for(let i=sortedWeeks.length-1;i>=0;i--){
+    const diff=(today-new Date(sortedWeeks[i]))/86400000;
+    if(diff<=14)curStreak++;else break;
   }
 
-  // Stats bar
-  const firstDate=sortedDates.length?new Date(sortedDates[0]).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):null;
-  const lastDate=sortedDates.length?new Date(sortedDates[sortedDates.length-1]).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):null;
+  const avgAll=allDates.filter(d=>d.val!==null).map(d=>d.val);
+  const yearAvg=avgAll.length?(avgAll.reduce((a,b)=>a+b,0)/avgAll.length).toFixed(1):'—';
+
   document.getElementById('heatmap-stats').innerHTML=`
     <div class="text-center">
       <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Check-ins</p>
       <p class="text-2xl font-headline font-extrabold text-on-surface">${checkinDays}</p>
-      <p class="text-[10px] text-on-surface-variant">${firstDate||'—'} – ${lastDate||'—'}</p>
+      <p class="text-[10px] text-on-surface-variant">weeks with data</p>
     </div>
     <div class="text-center border-x border-outline-variant/20">
-      <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Best streak</p>
-      <p class="text-2xl font-headline font-extrabold text-on-surface">${maxStreak}</p>
-      <p class="text-[10px] text-on-surface-variant">weeks</p>
+      <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Year avg</p>
+      <p class="text-2xl font-headline font-extrabold text-on-surface">${yearAvg}</p>
+      <p class="text-[10px] text-on-surface-variant">overall feeling</p>
     </div>
     <div class="text-center">
-      <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Active streak</p>
-      <p class="text-2xl font-headline font-extrabold text-on-surface">${curStreak}</p>
-      <p class="text-[10px] text-on-surface-variant">recent weeks</p>
+      <p class="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Best streak</p>
+      <p class="text-2xl font-headline font-extrabold text-on-surface">${maxStreak}</p>
+      <p class="text-[10px] text-on-surface-variant">consecutive weeks</p>
     </div>`;
 }
 
