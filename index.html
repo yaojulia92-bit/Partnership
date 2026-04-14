@@ -1,296 +1,375 @@
 <!DOCTYPE html>
-<html>
+<html class="dark" lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Partnership Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#F7F8FA;--card:#FFFFFF;--surface:#F0F2F5;
-  --julia:#9FB78F;--julia-light:#EBF0E6;--julia-mid:#C9D9BF;
-  --marco:#F54927;--marco-light:#FCDFE7;--marco-mid:#F99A82;
-  --rose:#C21445;--teal:#1EB8AA;
-  --text-heading:#0F172A;--text-body:#334155;--text-muted:#94A3B8;
-  --border:#E2E8F0;--border-focus:#9FB78F;
-  --shadow-sm:0 1px 3px rgba(15,23,42,0.06),0 1px 2px rgba(15,23,42,0.04);
-  --shadow-md:0 4px 16px rgba(15,23,42,0.08),0 2px 6px rgba(15,23,42,0.04);
-  --r:12px;--r-sm:8px;
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container": "#122033",
+        "surface-dim": "#051426",
+        "error": "#ffb4ab",
+        "primary-fixed": "#d1eabf",
+        "on-surface": "#d5e3fd",
+        "on-tertiary-fixed-variant": "#91002f",
+        "on-tertiary": "#ffffff",
+        "inverse-primary": "#4f6443",
+        "on-error": "#690005",
+        "surface-bright": "#2c3a4e",
+        "on-primary-fixed-variant": "#384c2d",
+        "surface-variant": "#273649",
+        "on-primary-container": "#344829",
+        "on-surface-variant": "#c4c8bd",
+        "on-secondary-fixed-variant": "#8d1600",
+        "on-error-container": "#ffdad6",
+        "surface": "#051426",
+        "primary-container": "#9fb78f",
+        "secondary-container": "#F54927",
+        "inverse-surface": "#d5e3fd",
+        "on-tertiary-fixed": "#400010",
+        "surface-container-highest": "#273649",
+        "secondary": "#F54927",
+        "on-background": "#d5e3fd",
+        "surface-tint": "#b5cea5",
+        "surface-container-low": "#0d1c2f",
+        "outline": "#8e9288",
+        "tertiary-container": "#C21445",
+        "on-secondary": "#ffffff",
+        "on-tertiary-container": "#ffffff",
+        "surface-container-lowest": "#010f21",
+        "tertiary-fixed-dim": "#ffb2b9",
+        "on-secondary-fixed": "#3e0500",
+        "on-primary-fixed": "#0d2006",
+        "inverse-on-surface": "#233144",
+        "tertiary-fixed": "#ffdadc",
+        "secondary-fixed-dim": "#ffb4a4",
+        "tertiary": "#C21445",
+        "primary": "#9fb78f",
+        "on-primary": "#223518",
+        "background": "#0D1C2F",
+        "outline-variant": "#444840",
+        "primary-fixed-dim": "#b5cea5",
+        "on-secondary-container": "#fffbff",
+        "error-container": "#93000a",
+        "secondary-fixed": "#ffdad3",
+        "surface-container-high": "#1c2b3e",
+        "teal-accent": "#1EB8AA",
+        "rose-accent": "#C21445",
+        "red-orange": "#F54927"
+      },
+      borderRadius: {
+        DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"
+      },
+      fontFamily: {
+        headline: ["Manrope"], body: ["Inter"], label: ["Inter"]
+      }
+    }
+  }
 }
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text-body);min-height:100vh}
-.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
-
-/* NAV */
-.nav{display:flex;border-top:1px solid var(--border);background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:8px 0 4px;position:sticky;bottom:0;z-index:10}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 4px;border:none;background:none;cursor:pointer;color:var(--text-muted);font-size:10px;font-family:'Inter',sans-serif;font-weight:500;letter-spacing:.2px;text-transform:none;transition:color .2s}
-.nav-btn.active{color:#C21445}
-.nav-icon{font-size:20px;line-height:1}
-
-/* PAGES */
-.page{display:none;flex:1;padding:0 0 80px;animation:fadeIn .2s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
-/* HERO HEADER */
-.hero{background:var(--bg);padding:24px 110px 20px 20px;position:relative;border-bottom:1px solid var(--border)}
-.hero-eyebrow{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;font-weight:600}
-.hero-title{font-size:22px;font-weight:700;color:var(--text-heading);line-height:1.2;letter-spacing:-.3px}
-.hero-sub{font-size:13px;color:var(--text-muted);margin-top:4px;font-weight:400}
-.hero.sage,.hero.dark,.hero.cream{background:var(--bg)}
-.hero.sage .hero-title,.hero.dark .hero-title,.hero.cream .hero-title{color:var(--text-heading)}
-.hero.sage .hero-eyebrow,.hero.dark .hero-eyebrow,.hero.cream .hero-eyebrow{color:var(--text-muted)}
-.hero.sage .hero-sub,.hero.dark .hero-sub,.hero.cream .hero-sub{color:var(--text-muted)}
-.hero-chars{position:absolute;right:0;bottom:0;display:flex;align-items:flex-end;gap:0;pointer-events:none}
-
-/* CONTENT AREA */
-.content{padding:20px 20px 0}
-
-/* CARDS */
-.card{background:var(--card);border-radius:var(--r);padding:20px;box-shadow:var(--shadow-sm);margin-bottom:12px;border:1px solid var(--border)}
-.card-label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;font-weight:600}
-
-/* METRIC GRID */
-.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-.metric-card{border-radius:var(--r);padding:20px 16px;text-align:center;border:none;box-shadow:var(--shadow-sm)}
-.metric-card.orange{background:var(--marco-light)}
-.metric-card.sage{background:var(--julia-light)}
-.metric-val{font-size:36px;font-weight:700;line-height:1}
-.metric-card.orange .metric-val{color:var(--marco)}
-.metric-card.sage .metric-val{color:var(--julia)}
-.metric-lbl{font-size:11px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}
-
-/* SCORE BARS */
-.score-block{margin-bottom:18px}
-.score-q{font-size:13px;font-weight:500;color:var(--text-body);margin-bottom:10px;line-height:1.5}
-.score-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.score-name{font-size:12px;font-weight:600;width:52px;flex-shrink:0;letter-spacing:.2px}
-.score-name.orange{color:var(--marco)}
-.score-name.sage{color:var(--julia)}
-.score-bar-wrap{flex:1;height:8px;background:var(--surface);border-radius:4px;overflow:hidden;border:none}
-.score-bar{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)}
-.score-bar.orange{background:var(--marco)}
-.score-bar.sage{background:var(--julia)}
-.score-val{font-size:13px;font-weight:600;color:var(--text-body);width:32px;text-align:right;flex-shrink:0}
-
-/* HISTORY */
-.week-header{background:var(--surface);border-radius:var(--r-sm);padding:10px 14px;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
-.week-header-text{font-size:13px;font-weight:600;color:var(--text-body)}
-.response-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-.resp-card{border-radius:var(--r-sm);padding:12px 14px;border:1px solid var(--border);background:var(--card)}
-.resp-card.orange{background:var(--marco-light);border-color:transparent}
-.resp-card.sage{background:var(--julia-light);border-color:transparent}
-.resp-who{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
-.resp-who.orange{color:var(--marco)}
-.resp-who.sage{color:var(--julia)}
-.resp-q{font-size:12px;color:var(--text-muted);margin-bottom:4px;font-weight:400;line-height:1.4}
-.resp-a{font-size:13px;line-height:1.5;color:var(--text-body);font-weight:500}
-.waiting-card{background:var(--surface);border-radius:var(--r-sm);padding:14px;border:1px dashed var(--border);margin-bottom:10px;font-size:13px;color:var(--text-muted);font-weight:400}
-
-/* PILL TAGS */
-.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.3px;border:none}
-.pill-orange{background:var(--marco-light);color:var(--marco)}
-.pill-sage{background:var(--julia-light);color:var(--julia)}
-
-/* LOADING */
-.loading{text-align:center;padding:60px 20px;color:var(--text-muted)}
-.spinner{width:32px;height:32px;border:3px solid var(--surface);border-top-color:var(--julia);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-.loading-text{font-size:14px;font-weight:500}
+</script>
+<style>
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+body{font-family:'Inter',sans-serif;background-color:#0D1C2F}
+h1,h2,h3,.headline{font-family:'Manrope',sans-serif}
+.page{display:none}.page.active{display:block}
+.nav-item.active{color:#9FB78F;background:rgba(159,183,143,0.15);border-radius:0.75rem}
+.nav-item.active span.material-symbols-outlined{font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24}
+.spinner{width:32px;height:32px;border:3px solid rgba(159,183,143,0.2);border-top-color:#9FB78F;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* EMPTY */
-.empty{text-align:center;padding:48px 20px;color:var(--text-muted);font-size:14px;line-height:1.75;font-weight:400}
-
-/* AI SUMMARY */
-.summary-box{background:rgba(30,184,170,0.10);border-radius:var(--r-sm);padding:16px;border:none;margin-bottom:12px}
-.summary-text{font-size:15px;line-height:1.75;color:var(--text-body);font-weight:400}
-
-/* BUTTONS */
-.btn-primary{width:100%;padding:13px;background:var(--marco);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s,box-shadow .15s;letter-spacing:0}
-.btn-primary:hover{background:var(--rose);box-shadow:0 4px 12px rgba(194,20,69,0.3)}
-.btn-primary:disabled{opacity:.45;cursor:not-allowed}
-.btn-outline{width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);color:var(--text-body);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s;margin-top:10px}
-.btn-outline:hover{background:var(--surface);border-color:#CBD5E1}
-.btn-sage{width:100%;padding:13px;background:#C21445;color:#fff;border:none;border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;transition:background .15s}
-.btn-sage:hover{background:#A01039}
-.refresh-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--card);cursor:pointer;font-size:12px;font-weight:500;color:var(--text-body);font-family:'Inter',sans-serif;transition:background .15s;margin-bottom:16px;box-shadow:var(--shadow-sm)}
-.refresh-btn:hover{background:var(--surface)}
-
-/* INPUTS */
-input[type=text],input[type=password],textarea.url-input{width:100%;border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;font-family:'Inter',sans-serif;font-size:14px;background:var(--card);color:var(--text-body);outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:8px;resize:none;font-weight:400}
-input:focus,textarea.url-input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(159,183,143,0.18)}
-
-/* DIAG */
-.diag-step{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;font-size:13px;font-weight:400;line-height:1.5}
-.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0;border:none}
-.dot-ok{background:#22C55E}.dot-err{background:#EF4444}.dot-wait{background:var(--border)}.dot-spin{background:var(--julia-mid);animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
-.raw-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px;font-size:11px;font-family:monospace;overflow-x:auto;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;margin-top:8px;color:var(--text-muted)}
-.banner{border-radius:var(--r-sm);padding:12px 14px;font-size:13px;font-weight:400;line-height:1.5;margin-bottom:14px;display:flex;gap:8px;border:none}
-.banner-sage{background:var(--julia-light);color:var(--text-body)}
-.banner-orange{background:var(--marco-light);color:var(--text-body)}
-
-/* TOAST */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--text-heading);color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;z-index:999;transition:transform .3s cubic-bezier(.4,0,.2,1);pointer-events:none;font-family:'Inter',sans-serif;box-shadow:var(--shadow-md)}
-.toast.show{transform:translateX(-50%) translateY(0)}
-
-/* CHART WRAPPER */
-.chart-wrap{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm);margin-bottom:14px;border:1px solid var(--border)}
-
-/* NAV SVG ICONS */
-.nav-icon-svg{display:block}
-.nav-icon-svg .icn-fill{fill:transparent;transition:fill .2s}
-.nav-btn.active .nav-icon-svg .icn-fill{fill:rgba(194,20,69,0.12)}
+.ai-streaming::after{content:'▋';animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 </head>
-<body>
-<div class="app">
+<body class="text-on-surface pb-32 bg-[#0D1C2F]">
 
-  <!-- DASHBOARD -->
-  <div id="page-dashboard" class="page active">
-    <div class="hero">
-      <div class="hero-eyebrow">Partnership Check-in</div>
-      <div class="hero-title">Dashboard</div>
-      <div class="hero-sub">Live data from your weekly check-ins</div>
-      <div class="hero-chars">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#6B9FD4"/><line x1="9" y1="30" x2="9" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="14.5" y1="30" x2="14.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="20" y1="30" x2="20" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="25.5" y1="30" x2="25.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="31" y1="30" x2="31" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="36.5" y1="30" x2="36.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><ellipse cx="6" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 6 44)"/><ellipse cx="38" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 38 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M9 17 Q13 4 22 6 Q31 4 35 17 Q30 5 22 6 Q14 5 9 17Z" fill="#7B4A1E"/><path d="M19 6 C17 1 25 1 26 6" fill="#7B4A1E"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M18 33 L22 36 L26 33" stroke="white" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#D44B3A"/><ellipse cx="5" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 5 44)"/><ellipse cx="39" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 39 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M8 16 Q6 30 7 50 Q11 35 12 22 Q9 20 8 16Z" fill="#8B5023"/><path d="M36 16 Q38 30 37 50 Q33 35 32 22 Q35 20 36 16Z" fill="#8B5023"/><path d="M8 18 Q12 4 22 6 Q32 4 36 18 Q30 6 22 7 Q14 6 8 18Z" fill="#8B5023"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
+<!-- TOP BAR -->
+<header class="flex justify-between items-center px-6 py-4 w-full z-50 sticky top-0 bg-[#0D1C2F]/95 backdrop-blur-md border-b border-white/5">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-primary">favorite</span>
+    <span class="font-headline font-extrabold text-[#9FB78F] text-lg tracking-tight">Partnership Check-in</span>
+  </div>
+  <button onclick="fetchAndRender()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors active:scale-95 duration-150">
+    <span class="material-symbols-outlined text-primary" id="refresh-icon">refresh</span>
+  </button>
+</header>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: DASHBOARD
+═══════════════════════════════════════════════ -->
+<div id="page-dashboard" class="page active">
+<main class="px-6 pt-4">
+
+  <!-- Greeting -->
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Dashboard</h1>
+      <p class="text-sm text-on-surface-variant mt-1" id="dash-date"></p>
     </div>
-    <div class="content" id="dashboard-content"></div>
+    <img alt="Potato characters" class="h-14 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/ADBb0ugPsLud-rnwKudN-yehh_yJOjz-Hrexta3qgZF-g95xuCOzm7K7_RuOdFEq4rn16izHZfUymZX3MKifj0UYKHfjGp1AY1EfD1ePZpiHlcsUN4Xx_f4zcaFC6iI4YQ5sTqTzbrsZXfRweRYRklSfVCGZ38eRCBR0iJ5DhnfFSGm7rjlQ1Rjh0Kg-RWQgbhNR7x8xfg4CqCpEN4ghBCX9myCBmciCcrq9du3UpSB1-EwA8FLsMrZ2wc6NuwAJ_JCvfwV1as4sJzuIog"/>
   </div>
 
-  <!-- HISTORY -->
-  <div id="page-history" class="page">
-    <div class="hero sage">
-      <div class="hero-eyebrow">Together</div>
-      <div class="hero-title">Response history</div>
-      <div class="hero-sub">Side-by-side answers over time</div>
-      <div class="hero-chars">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#6B9FD4"/><line x1="9" y1="30" x2="9" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="14.5" y1="30" x2="14.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="20" y1="30" x2="20" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="25.5" y1="30" x2="25.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="31" y1="30" x2="31" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="36.5" y1="30" x2="36.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><ellipse cx="6" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 6 44)"/><ellipse cx="38" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 38 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M9 17 Q13 4 22 6 Q31 4 35 17 Q30 5 22 6 Q14 5 9 17Z" fill="#7B4A1E"/><path d="M19 6 C17 1 25 1 26 6" fill="#7B4A1E"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M18 33 L22 36 L26 33" stroke="white" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#D44B3A"/><ellipse cx="5" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 5 44)"/><ellipse cx="39" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 39 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M8 16 Q6 30 7 50 Q11 35 12 22 Q9 20 8 16Z" fill="#8B5023"/><path d="M36 16 Q38 30 37 50 Q33 35 32 22 Q35 20 36 16Z" fill="#8B5023"/><path d="M8 18 Q12 4 22 6 Q32 4 36 18 Q30 6 22 7 Q14 6 8 18Z" fill="#8B5023"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-2 gap-4 mb-10">
+    <div class="p-5 rounded-xl flex flex-col justify-between aspect-square shadow-sm bg-surface-container border border-rose-accent/20">
+      <span class="material-symbols-outlined text-3xl text-rose-accent" style="font-variation-settings:'FILL' 1">description</span>
+      <div><div class="text-3xl font-headline font-extrabold text-white" id="stat-submissions">—</div><div class="text-sm font-medium text-on-surface-variant">Submissions</div></div>
     </div>
-    <div class="content" id="history-content"></div>
+    <div class="bg-surface-container p-5 rounded-xl flex flex-col justify-between aspect-square shadow-sm border border-rose-accent/20">
+      <span class="material-symbols-outlined text-rose-accent text-3xl" style="font-variation-settings:'FILL' 1">calendar_today</span>
+      <div><div class="text-3xl font-headline font-extrabold text-white" id="stat-paired">—</div><div class="text-sm font-medium text-on-surface-variant">Paired Weeks</div></div>
+    </div>
   </div>
 
-  <!-- TRENDS -->
-  <div id="page-trends" class="page">
-    <div class="hero dark">
-      <div class="hero-eyebrow">Over time</div>
-      <div class="hero-title">Trends</div>
-      <div class="hero-sub">How your scores move week by week</div>
-      <div class="hero-chars">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#6B9FD4"/><line x1="9" y1="30" x2="9" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="14.5" y1="30" x2="14.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="20" y1="30" x2="20" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="25.5" y1="30" x2="25.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="31" y1="30" x2="31" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="36.5" y1="30" x2="36.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><ellipse cx="6" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 6 44)"/><ellipse cx="38" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 38 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M9 17 Q13 4 22 6 Q31 4 35 17 Q30 5 22 6 Q14 5 9 17Z" fill="#7B4A1E"/><path d="M19 6 C17 1 25 1 26 6" fill="#7B4A1E"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M18 33 L22 36 L26 33" stroke="white" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#D44B3A"/><ellipse cx="5" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 5 44)"/><ellipse cx="39" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 39 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M8 16 Q6 30 7 50 Q11 35 12 22 Q9 20 8 16Z" fill="#8B5023"/><path d="M36 16 Q38 30 37 50 Q33 35 32 22 Q35 20 36 16Z" fill="#8B5023"/><path d="M8 18 Q12 4 22 6 Q32 4 36 18 Q30 6 22 7 Q14 6 8 18Z" fill="#8B5023"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
-    </div>
-    <div class="content" id="trends-content"></div>
+  <!-- Loading state -->
+  <div id="dash-loading" class="text-center py-12">
+    <div class="spinner"></div>
+    <p class="text-on-surface-variant text-sm">Loading your data…</p>
   </div>
 
-  <!-- SETTINGS -->
-  <div id="page-settings" class="page">
-    <div class="hero cream">
-      <div class="hero-eyebrow">Configuration</div>
-      <div class="hero-title">Settings</div>
-      <div class="hero-sub">Connect your Google Sheet</div>
-      <div class="hero-chars">
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#6B9FD4"/><line x1="9" y1="30" x2="9" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="14.5" y1="30" x2="14.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="20" y1="30" x2="20" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="25.5" y1="30" x2="25.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="31" y1="30" x2="31" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><line x1="36.5" y1="30" x2="36.5" y2="60" stroke="white" stroke-width="2" stroke-opacity="0.5"/><ellipse cx="6" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 6 44)"/><ellipse cx="38" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 38 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M9 17 Q13 4 22 6 Q31 4 35 17 Q30 5 22 6 Q14 5 9 17Z" fill="#7B4A1E"/><path d="M19 6 C17 1 25 1 26 6" fill="#7B4A1E"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M18 33 L22 36 L26 33" stroke="white" stroke-width="1.2" fill="none" stroke-linejoin="round"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="64" viewBox="0 0 44 64"><ellipse cx="22" cy="62" rx="13" ry="3" fill="rgba(0,0,0,0.08)"/><rect x="12" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><rect x="25" y="52" width="7" height="10" rx="3.5" fill="#BF7B4A"/><ellipse cx="22" cy="44" rx="16" ry="16" fill="#D44B3A"/><ellipse cx="5" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(-8 5 44)"/><ellipse cx="39" cy="44" rx="4" ry="7" fill="#BF7B4A" transform="rotate(8 39 44)"/><ellipse cx="22" cy="20" rx="14" ry="16" fill="#C98050"/><path d="M8 16 Q6 30 7 50 Q11 35 12 22 Q9 20 8 16Z" fill="#8B5023"/><path d="M36 16 Q38 30 37 50 Q33 35 32 22 Q35 20 36 16Z" fill="#8B5023"/><path d="M8 18 Q12 4 22 6 Q32 4 36 18 Q30 6 22 7 Q14 6 8 18Z" fill="#8B5023"/><circle cx="17" cy="20" r="2.2" fill="#1A0E06"/><circle cx="27" cy="20" r="2.2" fill="#1A0E06"/><circle cx="17.8" cy="19.2" r="0.9" fill="white"/><circle cx="27.8" cy="19.2" r="0.9" fill="white"/><circle cx="12" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><circle cx="32" cy="24" r="3.5" fill="#F4A0A0" opacity="0.55"/><path d="M17 26 Q22 30 27 26" stroke="#7B4A1E" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-      </div>
-    </div>
-    <div class="content">
-      <div style="height:20px"></div>
-      <div class="banner banner-sage"><span>✅</span><span>Reads directly from your published Google Sheet — no proxy needed.</span></div>
-      <div class="card">
-        <div class="card-label">Google Sheet CSV URL</div>
-        <textarea class="url-input" id="csv-url-input" rows="3" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?…&output=csv"></textarea>
-        <div class="card-label" style="margin-top:8px">Anthropic API key (optional — AI summaries)</div>
-        <input type="password" id="anthropic-key-input" placeholder="sk-ant-...">
-        <button class="btn-sage" onclick="saveSettings()">Save &amp; load data</button>
-      </div>
-
-      <div class="card" id="col-map-card" style="display:none">
-        <div class="card-label">Detected columns</div>
-        <div id="col-map-display"></div>
-        <div style="font-size:12px;color:var(--muted);margin-top:10px;margin-bottom:14px;font-weight:500">If any are wrong, correct them below:</div>
-        <div class="card-label">Who are you? column</div><input type="text" id="col-who">
-        <div class="card-label">Connected score column</div><input type="text" id="col-connected">
-        <div class="card-label">Communication score column</div><input type="text" id="col-communication">
-        <div class="card-label">Overall score column</div><input type="text" id="col-overall">
-        <div class="card-label">Partner diff column</div><input type="text" id="col-partnerdiff">
-        <div class="card-label">Self diff column</div><input type="text" id="col-selfdiff">
-        <div class="card-label">Looking forward column</div><input type="text" id="col-lookforward">
-        <button class="btn-sage" onclick="saveSettings()">Save column mapping</button>
-      </div>
-
-      <div class="card">
-        <div class="card-label">Diagnostics</div>
-        <div class="diag-step"><span class="status-dot dot-wait" id="d1-dot"></span><div>CSV URL entered<div style="font-size:11px;color:var(--muted)" id="d1-sub">—</div></div></div>
-        <div class="diag-step"><span class="status-dot dot-wait" id="d2-dot"></span><div>Sheet reachable<div style="font-size:11px;color:var(--muted)" id="d2-sub">—</div></div></div>
-        <div class="diag-step"><span class="status-dot dot-wait" id="d3-dot"></span><div>Columns detected<div style="font-size:11px;color:var(--muted)" id="d3-sub">—</div></div></div>
-        <div class="diag-step"><span class="status-dot dot-wait" id="d4-dot"></span><div>Rows parsed<div style="font-size:11px;color:var(--muted)" id="d4-sub">—</div></div></div>
-        <button class="btn-outline" onclick="runDiag()">🔍 Run diagnostics</button>
-        <div id="raw-wrap" style="display:none">
-          <div style="font-size:11px;color:var(--muted);margin-top:12px;margin-bottom:4px;text-transform:uppercase;letter-spacing:.8px;font-weight:700">Columns found in sheet</div>
-          <div class="raw-box" id="raw-box"></div>
+  <!-- Latest Week -->
+  <section id="dash-latest" class="mb-10 hidden">
+    <div class="flex justify-between items-end mb-6">
+      <h2 class="text-2xl font-headline font-bold text-on-surface">Latest Week</h2>
+      <div class="flex flex-col items-end">
+        <span class="text-xs font-semibold text-primary/60" id="latest-week-label"></span>
+        <div class="flex items-center gap-1 mt-1" id="trend-badge">
+          <span class="w-2 h-2 rounded-full" id="trend-dot"></span>
+          <span class="text-[10px] font-bold uppercase tracking-tighter" id="trend-text"></span>
         </div>
       </div>
     </div>
+    <div class="bg-surface-container rounded-xl p-6 shadow-xl space-y-8 border border-white/5" id="latest-scores"></div>
+  </section>
+
+  <!-- All-time Averages -->
+  <section id="dash-averages" class="mb-10 hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-2xl font-headline font-bold text-on-surface">All-time Averages</h2>
+      <div class="flex gap-2">
+        <div class="w-2 h-2 rounded-full bg-[#9FB78F]"></div>
+        <div class="w-2 h-2 rounded-full bg-red-orange" style="background-color:#F54927"></div>
+      </div>
+    </div>
+    <div class="bg-surface-container rounded-2xl p-1 overflow-hidden shadow-sm border border-white/5">
+      <div class="rounded-xl p-6">
+        <div class="grid grid-cols-3 gap-4 text-center" id="averages-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI Insight Card -->
+  <div id="dash-ai" class="relative overflow-hidden bg-rose-accent rounded-2xl p-8 text-white mb-10 shadow-lg hidden">
+    <div class="relative z-10">
+      <p class="text-white/80 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">AI Insight</p>
+      <div id="ai-insight-text" class="text-base font-body leading-relaxed mb-4 text-white/90">Tap below to generate a personalised insight.</div>
+      <button onclick="generateInsight()" id="ai-btn" class="text-xs font-bold text-white underline underline-offset-4 hover:opacity-80 transition-opacity">✨ Generate insight</button>
+    </div>
+    <div class="absolute -right-10 -bottom-10 opacity-20">
+      <span class="material-symbols-outlined text-[120px]" style="font-variation-settings:'wght' 200">favorite</span>
+    </div>
   </div>
 
-  <nav class="nav">
-    <button class="nav-btn active" onclick="showPage('dashboard',this)">
-      <svg class="nav-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect class="icn-fill" x="3" y="13" width="5" height="8" rx="1.5"/>
-        <rect class="icn-fill" x="9.5" y="8" width="5" height="13" rx="1.5"/>
-        <rect class="icn-fill" x="16" y="4" width="5" height="17" rx="1.5"/>
-        <rect x="3" y="13" width="5" height="8" rx="1.5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        <rect x="9.5" y="8" width="5" height="13" rx="1.5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        <rect x="16" y="4" width="5" height="17" rx="1.5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      </svg>
-      Overview
-    </button>
-    <button class="nav-btn" onclick="showPage('history',this)">
-      <svg class="nav-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path class="icn-fill" d="M3 6C3 4.34 4.34 3 6 3H18C19.66 3 21 4.34 21 6V14C21 15.66 19.66 17 18 17H13L8 21V17H6C4.34 17 3 15.66 3 14V6Z"/>
-        <path d="M3 6C3 4.34 4.34 3 6 3H18C19.66 3 21 4.34 21 6V14C21 15.66 19.66 17 18 17H13L8 21V17H6C4.34 17 3 15.66 3 14V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        <line x1="7" y1="8.5" x2="17" y2="8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="7" y1="12.5" x2="13" y2="12.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      History
-    </button>
-    <button class="nav-btn" onclick="showPage('trends',this)">
-      <svg class="nav-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="3,18 8,12 13,15 21,5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <polyline points="17,5 21,5 21,9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      Trends
-    </button>
-    <button class="nav-btn" onclick="showPage('settings',this)">
-      <svg class="nav-icon-svg" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <line x1="4" y1="6" x2="20" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <circle class="icn-fill" cx="8" cy="6" r="2.5"/>
-        <circle cx="8" cy="6" r="2.5" stroke="currentColor" stroke-width="2"/>
-        <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <circle class="icn-fill" cx="16" cy="12" r="2.5"/>
-        <circle cx="16" cy="12" r="2.5" stroke="currentColor" stroke-width="2"/>
-        <line x1="4" y1="18" x2="20" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <circle class="icn-fill" cx="10" cy="18" r="2.5"/>
-        <circle cx="10" cy="18" r="2.5" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      Settings
-    </button>
-  </nav>
+  <!-- No data state -->
+  <div id="dash-empty" class="hidden text-center py-16">
+    <span class="material-symbols-outlined text-5xl text-on-surface-variant mb-4 block">cloud_off</span>
+    <p class="text-on-surface-variant text-sm font-medium mb-2">No data yet</p>
+    <p class="text-on-surface-variant/60 text-xs">Go to Settings and add your Google Sheet CSV URL</p>
+    <button onclick="switchPage('settings')" class="mt-6 px-6 py-3 bg-primary text-on-primary font-bold text-sm rounded-xl">Go to Settings</button>
+  </div>
+
+</main>
 </div>
-<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: HISTORY
+═══════════════════════════════════════════════ -->
+<div id="page-history" class="page">
+<main class="px-6 pt-4">
+  <div class="mb-8">
+    <h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">History</h1>
+    <p class="text-sm text-on-surface-variant mt-1">Side-by-side answers over time</p>
+  </div>
+  <div id="history-content">
+    <div class="text-center py-16">
+      <div class="spinner"></div>
+      <p class="text-on-surface-variant text-sm">Loading history…</p>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: METRICS / TRENDS
+═══════════════════════════════════════════════ -->
+<div id="page-metrics" class="page">
+<main class="pt-4 px-4 space-y-6 max-w-2xl mx-auto pb-8">
+
+  <!-- Loading state -->
+  <div id="metrics-loading" class="text-center py-16">
+    <div class="spinner"></div>
+    <p class="text-on-surface-variant text-sm">Loading metrics…</p>
+  </div>
+
+  <!-- Hero Metric Section -->
+  <section id="metrics-hero" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+    <div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/30 flex flex-col items-center justify-center text-center">
+      <p class="text-on-surface-variant font-label text-sm mb-2 uppercase tracking-wider">Overall Feeling Score</p>
+      <div class="relative flex items-center justify-center">
+        <svg class="w-32 h-32 transform -rotate-90">
+          <circle class="text-surface-variant" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="8"></circle>
+          <circle id="score-ring" class="transition-all duration-1000" cx="64" cy="64" fill="transparent" r="58" stroke="#C21445" stroke-dasharray="364.4" stroke-dashoffset="364.4" stroke-width="8"></circle>
+        </svg>
+        <span class="absolute text-4xl font-headline font-extrabold text-on-surface" id="score-ring-val">—</span>
+      </div>
+      <p class="mt-4 font-medium flex items-center gap-1" id="score-trend-line">
+        <span class="material-symbols-outlined text-sm">trending_up</span>
+        <span id="score-trend-text">—</span>
+      </p>
+    </div>
+    <div class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/30 flex flex-col justify-between">
+      <div>
+        <h3 class="font-headline font-bold text-lg mb-1">Partner Pulse</h3>
+        <p class="text-on-surface-variant text-sm">Individual scores this week</p>
+      </div>
+      <div class="space-y-4 mt-4" id="partner-pulse"></div>
+    </div>
+  </section>
+
+  <!-- Trend Chart -->
+  <section id="metrics-chart" class="bg-surface-container-high rounded-xl p-6 border border-outline-variant/30 hidden">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-headline font-bold text-lg">Relationship Trend</h3>
+      <div class="flex gap-2">
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-[#9FB78F]"></span><span class="text-[10px] text-on-surface-variant font-bold">Julia</span></div>
+        <div class="flex items-center gap-1"><span class="w-2 h-2 rounded-full" style="background:#F54927"></span><span class="text-[10px] text-on-surface-variant font-bold">Marco</span></div>
+      </div>
+    </div>
+    <div class="h-48 w-full">
+      <canvas id="chart-overall-trend" height="192"></canvas>
+    </div>
+    <div class="flex justify-between mt-4 text-[10px] text-on-surface-variant uppercase tracking-tighter" id="chart-labels"></div>
+  </section>
+
+  <!-- Sub-metric Breakdown -->
+  <section id="metrics-breakdown" class="space-y-4 hidden">
+    <h3 class="font-headline font-bold text-lg px-1">Sub-metric Breakdown</h3>
+    <div class="grid grid-cols-2 gap-4" id="breakdown-grid"></div>
+  </section>
+
+  <!-- AI Tips -->
+  <section id="metrics-tips" class="bg-surface-container-highest/50 rounded-xl p-6 border-l-4 border-[#C21445] hidden">
+    <div class="flex items-start gap-4">
+      <div class="bg-[#C21445]/10 p-2 rounded-lg flex-shrink-0">
+        <span class="material-symbols-outlined text-[#C21445]">lightbulb</span>
+      </div>
+      <div class="space-y-3 flex-1">
+        <h3 class="font-headline font-bold text-lg">AI Insight</h3>
+        <div id="metrics-ai-text" class="text-sm text-on-surface-variant leading-relaxed">Tap below to generate personalised tips.</div>
+        <button onclick="generateMetricsInsight()" id="metrics-ai-btn" class="w-full py-2.5 rounded-lg bg-[#C21445] text-white font-bold text-sm hover:opacity-90 transition-opacity">✨ Generate insight</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Not enough data -->
+  <div id="metrics-empty" class="hidden text-center py-16 text-on-surface-variant text-sm">
+    <span class="material-symbols-outlined text-4xl block mb-3">bar_chart</span>
+    Complete at least 2 weeks of check-ins to see trends.
+  </div>
+
+</main>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE: SETTINGS
+═══════════════════════════════════════════════ -->
+<div id="page-settings" class="page">
+<main class="px-6 pt-4">
+  <div class="mb-8">
+    <h1 class="text-4xl font-headline font-extrabold tracking-tight text-on-surface">Settings</h1>
+    <p class="text-sm text-on-surface-variant mt-1">Connect your data sources</p>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-6 border border-white/5 mb-4">
+    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Google Sheet CSV URL</p>
+    <textarea id="csv-url-input" rows="3" placeholder="https://docs.google.com/spreadsheets/d/e/…/pub?…&output=csv"
+      class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary resize-none mb-4"></textarea>
+    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2 mt-2">Anthropic API Key <span class="normal-case font-normal text-on-surface-variant/50">(for AI insights)</span></p>
+    <input type="password" id="anthropic-key-input" placeholder="sk-ant-..."
+      class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary mb-4"/>
+    <button onclick="saveSettings()" class="w-full py-3 bg-primary text-on-primary font-bold text-sm rounded-xl hover:opacity-90 transition-opacity">Save &amp; load data</button>
+  </div>
+
+  <!-- Column mapping (auto-shown after first load) -->
+  <div id="col-map-card" class="bg-surface-container rounded-xl p-6 border border-white/5 mb-4 hidden">
+    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Column mapping</p>
+    <div id="col-map-display" class="space-y-2 mb-4"></div>
+    <p class="text-xs text-on-surface-variant/60 mb-4">If any columns are wrong, correct them below and save again.</p>
+    <div class="space-y-2">
+      <input type="text" id="col-who" placeholder="Who are you? column name" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <input type="text" id="col-connected" placeholder="Connected score column" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <input type="text" id="col-communication" placeholder="Communication score column" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <input type="text" id="col-overall" placeholder="Overall score column" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <input type="text" id="col-partnerdiff" placeholder="Partner diff column" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <input type="text" id="col-selfdiff" placeholder="Self diff column" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <input type="text" id="col-lookforward" placeholder="Looking forward column" class="w-full bg-surface-container-highest border border-outline/40 rounded-lg px-4 py-2 text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-none focus:border-primary"/>
+      <button onclick="saveSettings()" class="w-full py-3 bg-surface-container-highest text-on-surface font-bold text-sm rounded-xl hover:bg-surface-variant transition-colors mt-2">Save column mapping</button>
+    </div>
+  </div>
+
+  <!-- Diagnostics -->
+  <div class="bg-surface-container rounded-xl p-6 border border-white/5 mb-4">
+    <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Diagnostics</p>
+    <div class="space-y-3" id="diag-list">
+      <div class="flex items-start gap-3 text-sm"><span class="w-2 h-2 rounded-full bg-outline mt-1.5 flex-shrink-0" id="d1-dot"></span><div>CSV URL entered<div class="text-xs text-on-surface-variant" id="d1-sub">—</div></div></div>
+      <div class="flex items-start gap-3 text-sm"><span class="w-2 h-2 rounded-full bg-outline mt-1.5 flex-shrink-0" id="d2-dot"></span><div>Sheet reachable<div class="text-xs text-on-surface-variant" id="d2-sub">—</div></div></div>
+      <div class="flex items-start gap-3 text-sm"><span class="w-2 h-2 rounded-full bg-outline mt-1.5 flex-shrink-0" id="d3-dot"></span><div>Columns detected<div class="text-xs text-on-surface-variant" id="d3-sub">—</div></div></div>
+      <div class="flex items-start gap-3 text-sm"><span class="w-2 h-2 rounded-full bg-outline mt-1.5 flex-shrink-0" id="d4-dot"></span><div>Rows parsed<div class="text-xs text-on-surface-variant" id="d4-sub">—</div></div></div>
+    </div>
+    <button onclick="runDiag()" class="w-full mt-4 py-3 bg-surface-container-highest text-on-surface font-bold text-sm rounded-xl hover:bg-surface-variant transition-colors">🔍 Run diagnostics</button>
+    <div id="raw-wrap" class="hidden mt-4">
+      <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Raw response</p>
+      <pre id="raw-box" class="bg-surface-container-lowest rounded-lg p-3 text-xs text-on-surface-variant overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto"></pre>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-slate-900 border-t border-slate-700 shadow-lg rounded-t-lg">
+  <button onclick="switchPage('dashboard')" class="nav-item active flex flex-col items-center justify-center px-3 py-1 transition-all duration-200" id="nav-dashboard">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">dashboard</span>
+    <span class="text-xs font-medium font-label">Dashboard</span>
+  </button>
+  <button onclick="switchPage('history')" class="nav-item flex flex-col items-center justify-center text-slate-400 px-3 py-1 transition-all duration-200" id="nav-history">
+    <span class="material-symbols-outlined">history</span>
+    <span class="text-xs font-medium font-label">History</span>
+  </button>
+  <button onclick="switchPage('metrics')" class="nav-item flex flex-col items-center justify-center text-slate-400 px-3 py-1 transition-all duration-200" id="nav-metrics">
+    <span class="material-symbols-outlined">analytics</span>
+    <span class="text-xs font-medium font-label">Metrics</span>
+  </button>
+  <button onclick="switchPage('settings')" class="nav-item flex flex-col items-center justify-center text-slate-400 px-3 py-1 transition-all duration-200" id="nav-settings">
+    <span class="material-symbols-outlined">settings</span>
+    <span class="text-xs font-medium font-label">Settings</span>
+  </button>
+</nav>
+
+<!-- TOAST -->
+<div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 -translate-y-16 transition-transform duration-300 bg-surface-container-highest text-on-surface text-sm font-medium px-5 py-3 rounded-full shadow-lg z-[100] pointer-events-none"></div>
 
 <script>
 const DEFAULT_CSV='https://docs.google.com/spreadsheets/d/e/2PACX-1vTAjNyAvySSOIjN_8gSBvtv9LmLPm_VsqB18R_9Oc9CJFv0l06zE7-ZbkmrJy0704jRgsCjsJXFlgZ9/pub?gid=2016305011&single=true&output=csv';
 let cfg={csvUrl:DEFAULT_CSV,anthropicKey:'',cols:{who:'',connected:'',communication:'',overall:'',partnerDiff:'',selfDiff:'',lookForward:''}};
-let subs=[];let charts={};
+let subs=[];let chartInstances={};
 const Q={
   connected:{label:'How connected did you feel?',type:'scale'},
   communication:{label:'How was your communication?',type:'scale'},
@@ -300,23 +379,27 @@ const Q={
   overall:{label:'Overall feeling about the relationship?',type:'scale'}
 };
 
+// ── INIT ───────────────────────────────────────────────────────────────────
 function init(){
-  try{const r=localStorage.getItem('pviz4');if(r)cfg=Object.assign({},cfg,JSON.parse(r));}catch(e){}
+  try{const r=localStorage.getItem('pcfg');if(r)cfg=Object.assign({},cfg,JSON.parse(r));}catch(e){}
   document.getElementById('csv-url-input').value=cfg.csvUrl||DEFAULT_CSV;
   document.getElementById('anthropic-key-input').value=cfg.anthropicKey||'';
   populateCols();
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   fetchAndRender();
 }
+
 function populateCols(){
   const m=cfg.cols;
-  ['who','connected','communication','overall','partnerdiff','selfdiff','lookforward'].forEach(k=>{
-    const el=document.getElementById('col-'+k);
-    if(el) el.value=m[k.replace('partnerdiff','partnerDiff').replace('selfdiff','selfDiff').replace('lookforward','lookForward')]||'';
-  });
+  document.getElementById('col-who').value=m.who||'';
+  document.getElementById('col-connected').value=m.connected||'';
+  document.getElementById('col-communication').value=m.communication||'';
+  document.getElementById('col-overall').value=m.overall||'';
   document.getElementById('col-partnerdiff').value=m.partnerDiff||'';
   document.getElementById('col-selfdiff').value=m.selfDiff||'';
   document.getElementById('col-lookforward').value=m.lookForward||'';
 }
+
 function saveSettings(){
   cfg.csvUrl=document.getElementById('csv-url-input').value.trim();
   cfg.anthropicKey=document.getElementById('anthropic-key-input').value.trim();
@@ -329,13 +412,20 @@ function saveSettings(){
     selfDiff:document.getElementById('col-selfdiff').value.trim(),
     lookForward:document.getElementById('col-lookforward').value.trim(),
   };
-  localStorage.setItem('pviz4',JSON.stringify(cfg));
-  showToast('Saved 🎉');fetchAndRender();
+  localStorage.setItem('pcfg',JSON.stringify(cfg));
+  showToast('Saved ✓');
+  fetchAndRender();
 }
 
+// ── FETCH ──────────────────────────────────────────────────────────────────
 async function fetchAndRender(){
-  ['dashboard-content','history-content','trends-content'].forEach(id=>
-    document.getElementById(id).innerHTML=`<div class="loading"><div class="spinner"></div><div class="loading-text">Loading your data…</div></div>`);
+  const icon=document.getElementById('refresh-icon');
+  icon.style.animation='spin .8s linear infinite';
+  document.getElementById('dash-loading').classList.remove('hidden');
+  document.getElementById('dash-latest').classList.add('hidden');
+  document.getElementById('dash-averages').classList.add('hidden');
+  document.getElementById('dash-ai').classList.add('hidden');
+  document.getElementById('dash-empty').classList.add('hidden');
   try{
     const result=await new Promise((resolve,reject)=>{
       Papa.parse(cfg.csvUrl||DEFAULT_CSV,{download:true,header:true,skipEmptyLines:true,complete:resolve,error:reject});
@@ -344,13 +434,19 @@ async function fetchAndRender(){
     if(!cfg.cols.who)autoDetect(result.meta.fields||[]);
     subs=parseRows(result.data);
     showColMap(result.meta.fields||[]);
-    renderDash();renderHist();renderTrends();
+    renderDash();
+    renderHistory();
+    renderMetrics();
   }catch(e){
-    const msg=`<div class="empty">⚠️ Could not load sheet.<br><br>${e.message}<br><br>Go to <strong>Settings → Run diagnostics</strong></div>`;
-    ['dashboard-content','history-content','trends-content'].forEach(id=>document.getElementById(id).innerHTML=msg);
+    document.getElementById('dash-loading').classList.add('hidden');
+    document.getElementById('dash-empty').classList.remove('hidden');
+    document.getElementById('stat-submissions').textContent='—';
+    document.getElementById('stat-paired').textContent='—';
   }
+  icon.style.animation='';
 }
 
+// ── AUTO-DETECT ────────────────────────────────────────────────────────────
 function autoDetect(fields){
   const find=kws=>fields.find(f=>kws.some(k=>f.toLowerCase().includes(k)))||'';
   cfg.cols.who=find(['who are you']);
@@ -360,21 +456,26 @@ function autoDetect(fields){
   cfg.cols.partnerDiff=find(['partner could','partner have done']);
   cfg.cols.selfDiff=find(['you could','you have done']);
   cfg.cols.lookForward=find(['looking forward']);
-  localStorage.setItem('pviz4',JSON.stringify(cfg));
+  localStorage.setItem('pcfg',JSON.stringify(cfg));
   populateCols();
 }
+
 function showColMap(fields){
-  document.getElementById('col-map-card').style.display='block';
+  document.getElementById('col-map-card').classList.remove('hidden');
   const c=cfg.cols;
-  const row=(l,v)=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px"><span style="font-weight:600;color:var(--text-muted)">${l}</span><span style="font-weight:500;color:${v?'var(--text-heading)':'var(--marco)'}">${v?v.slice(0,28)+'…':'not detected'}</span></div>`;
-  document.getElementById('col-map-display').innerHTML=
-    row('Who',c.who)+row('Connected',c.connected)+row('Communication',c.communication)+row('Overall',c.overall)+row('Partner diff',c.partnerDiff)+row('Looking forward',c.lookForward);
+  const pairs=[['Who',c.who],['Connected',c.connected],['Communication',c.communication],['Overall',c.overall],['Partner diff',c.partnerDiff],['Looking forward',c.lookForward]];
+  document.getElementById('col-map-display').innerHTML=pairs.map(([l,v])=>
+    `<div class="flex justify-between text-xs py-1 border-b border-white/5">
+      <span class="font-bold text-on-surface-variant">${l}</span>
+      <span class="${v?'text-on-surface':'text-rose-accent'}">${v?v.slice(0,30)+'…':'not detected'}</span>
+    </div>`).join('');
 }
+
 function parseRows(rows){
   const c=cfg.cols;
   return rows.map(r=>{
-    const whoRaw=(r[c.who]||'').trim();
-    const who=whoRaw==='A'||whoRaw.toLowerCase().includes('julia')?'julia':whoRaw==='B'||whoRaw.toLowerCase().includes('marco')?'marco':null;
+    const w=(r[c.who]||'').trim();
+    const who=w==='A'||w.toLowerCase().includes('julia')?'julia':w==='B'||w.toLowerCase().includes('marco')?'marco':null;
     if(!who)return null;
     const ts=r['Submission date']||r['Timestamp']||r['timestamp']||r['Date']||new Date().toISOString();
     return{who,submittedAt:ts,answers:{
@@ -387,98 +488,116 @@ function parseRows(rows){
     }};
   }).filter(Boolean);
 }
+
 function wkKey(d){const dt=new Date(d),dy=dt.getDay(),diff=dt.getDate()-dy+(dy===0?-6:1);return new Date(new Date(d).setDate(diff)).toISOString().split('T')[0];}
 function grouped(){const m={};subs.forEach(s=>{const k=wkKey(s.submittedAt);if(!m[k])m[k]=[];m[k].push(s);});return m;}
-function avg(who,k){const v=subs.filter(s=>s.who===who&&s.answers[k]!==undefined&&!isNaN(s.answers[k])).map(s=>s.answers[k]);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
-function miniBar(val,who){
-  const color=who==='julia'?'var(--julia)':'var(--marco)';
-  return`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:var(--surface);border-radius:4px;border:none"><div style="height:100%;background:${color};border-radius:4px;width:${Math.min(100,val*10)}%"></div></div><span style="font-size:13px;font-weight:600;color:var(--text-body)">${val}/10</span></div>`;
-}
+function avg(who,k){const v=subs.filter(s=>s.who===who&&s.answers[k]!==undefined&&!isNaN(s.answers[k])).map(s=>s.answers[k]);return v.length?(v.reduce((a,b)=>a+b,0)/v.length):null;}
 
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
 function renderDash(){
-  const el=document.getElementById('dashboard-content');
-  if(!subs.length){el.innerHTML=`<div style="height:20px"></div><div class="empty">No responses found yet.<br><br>Make sure Julia and Marco have submitted the Tally form and the column mapping in Settings looks correct.</div>`;return;}
+  document.getElementById('dash-loading').classList.add('hidden');
   const g=grouped(),weeks=Object.keys(g).sort();
   const paired=weeks.filter(w=>g[w].find(s=>s.who==='julia')&&g[w].find(s=>s.who==='marco'));
+  document.getElementById('stat-submissions').textContent=subs.length;
+  document.getElementById('stat-paired').textContent=paired.length;
+
+  if(!subs.length){document.getElementById('dash-empty').classList.remove('hidden');return;}
+
+  // Latest week scores
   const latest=g[weeks[weeks.length-1]]||[];
   const jL=latest.find(s=>s.who==='julia'),mL=latest.find(s=>s.who==='marco');
+  const lw=new Date(weeks[weeks.length-1]);
+  const we=new Date(lw);we.setDate(we.getDate()+6);
+  document.getElementById('latest-week-label').textContent=
+    lw.toLocaleDateString('en-GB',{month:'short',day:'numeric'})+' – '+we.toLocaleDateString('en-GB',{month:'short',day:'numeric'});
+
+  // Trend indicator
+  if(weeks.length>=2){
+    const prev=g[weeks[weeks.length-2]];
+    const prevAvg=s=>s?['connected','communication','overall'].map(k=>Number(s.answers[k]||0)).reduce((a,b)=>a+b,0)/3:0;
+    const latestAvg=(jL?prevAvg(jL):0)+(mL?prevAvg(mL):0);
+    const prevJ=prev?.find(s=>s.who==='julia'),prevM=prev?.find(s=>s.who==='marco');
+    const oldAvg=(prevJ?prevAvg(prevJ):0)+(prevM?prevAvg(prevM):0);
+    const up=latestAvg>=oldAvg;
+    document.getElementById('trend-dot').className=`w-2 h-2 rounded-full ${up?'bg-[#9FB78F]':'bg-rose-accent'}`;
+    document.getElementById('trend-text').className=`text-[10px] font-bold uppercase tracking-tighter ${up?'text-[#9FB78F]':'text-rose-accent'}`;
+    document.getElementById('trend-text').textContent=up?'Trending Up':'Trending Down';
+  }
+
   const sk=['connected','communication','overall'];
-
-  const scRows=(j,m)=>sk.map(k=>{
-    const jv=j?.answers[k],mv=m?.answers[k];
+  document.getElementById('latest-scores').innerHTML=sk.map(k=>{
+    const jv=jL?.answers[k],mv=mL?.answers[k];
     if((jv===undefined||isNaN(jv))&&(mv===undefined||isNaN(mv)))return'';
-    return`<div class="score-block">
-      <div class="score-q">${Q[k].label}</div>
-      ${jv!==undefined&&!isNaN(jv)?`<div class="score-row"><span class="score-name sage">Julia 🥔</span><div class="score-bar-wrap"><div class="score-bar sage" style="width:${jv*10}%"></div></div><span class="score-val">${jv}</span></div>`:''}
-      ${mv!==undefined&&!isNaN(mv)?`<div class="score-row"><span class="score-name orange">Marco</span><div class="score-bar-wrap"><div class="score-bar orange" style="width:${mv*10}%"></div></div><span class="score-val">${mv}</span></div>`:''}
+    return`<div>
+      <p class="text-sm font-semibold text-on-surface/80 mb-4">${Q[k].label}</p>
+      <div class="space-y-3">
+        ${jv!==undefined&&!isNaN(jv)?`<div class="flex items-center gap-3">
+          <span class="text-[10px] font-bold w-12 text-[#9FB78F]">JULIA 🥔</span>
+          <div class="flex-1 h-3 bg-surface-container-highest rounded-full overflow-hidden">
+            <div class="h-full rounded-full bg-[#9FB78F]" style="width:${jv*10}%"></div>
+          </div>
+          <span class="text-xs font-bold w-6 text-on-surface">${Number(jv).toFixed(1)}</span>
+        </div>`:''}
+        ${mv!==undefined&&!isNaN(mv)?`<div class="flex items-center gap-3">
+          <span class="text-[10px] font-bold w-12" style="color:#F54927">MARCO</span>
+          <div class="flex-1 h-3 bg-surface-container-highest rounded-full overflow-hidden">
+            <div class="h-full rounded-full" style="background-color:#F54927;width:${mv*10}%"></div>
+          </div>
+          <span class="text-xs font-bold w-6 text-on-surface">${Number(mv).toFixed(1)}</span>
+        </div>`:''}
+      </div>
     </div>`;
   }).join('');
 
-  const avgRows=sk.map(k=>{
-    const ja=avg('julia',k),ma=avg('marco',k);if(!ja&&!ma)return'';
-    return`<div class="score-block">
-      <div class="score-q">${Q[k].label}</div>
-      ${ja?`<div class="score-row"><span class="score-name sage">Julia 🥔</span><div class="score-bar-wrap"><div class="score-bar sage" style="width:${ja*10}%"></div></div><span class="score-val">${ja.toFixed(1)}</span></div>`:''}
-      ${ma?`<div class="score-row"><span class="score-name orange">Marco</span><div class="score-bar-wrap"><div class="score-bar orange" style="width:${ma*10}%"></div></div><span class="score-val">${ma.toFixed(1)}</span></div>`:''}
+  document.getElementById('dash-latest').classList.remove('hidden');
+
+  // Averages
+  document.getElementById('averages-grid').innerHTML=sk.map(k=>{
+    const ja=avg('julia',k),ma=avg('marco',k);
+    const labels={connected:'Connected',communication:'Comm.',overall:'Overall'};
+    return`<div${k==='communication'?' class="border-x border-outline/20"':''}>
+      <p class="text-[10px] font-bold text-on-surface/40 uppercase tracking-widest mb-2">${labels[k]}</p>
+      <div class="flex justify-center items-baseline gap-1">
+        <span class="text-xl font-headline font-extrabold text-[#9FB78F]">${ja?ja.toFixed(1):'—'}</span>
+        <span class="text-[10px] font-bold text-on-surface/30">/</span>
+        <span class="text-xl font-headline font-extrabold" style="color:#F54927">${ma?ma.toFixed(1):'—'}</span>
+      </div>
     </div>`;
   }).join('');
-
-  const ls=scRows(jL,mL);
-  el.innerHTML=`<div style="height:20px"></div>
-    <button class="refresh-btn" onclick="fetchAndRender()">↻ Refresh data</button>
-    <div class="metric-grid">
-      <div class="metric-card orange"><div class="metric-val">${subs.length}</div><div class="metric-lbl">Submissions</div></div>
-      <div class="metric-card sage"><div class="metric-val">${paired.length}</div><div class="metric-lbl">Paired weeks</div></div>
-    </div>
-    ${ls?`<div class="card"><div class="card-label">Latest week</div>${ls}</div>`:''}
-    ${avgRows?`<div class="card"><div class="card-label">All-time averages</div>${avgRows}</div>`:''}
-    <div class="card">
-      <div class="card-label">AI insight</div>
-      <div id="ai-text" class="summary-text" style="color:var(--muted);font-size:13px">Tap below to generate a pattern insight from your recent responses.</div>
-      <button class="btn-primary" style="margin-top:12px" id="ai-btn" onclick="genSummary()">✨ Generate insight</button>
-    </div>
-    <div style="height:8px"></div>`;
+  document.getElementById('dash-averages').classList.remove('hidden');
+  document.getElementById('dash-ai').classList.remove('hidden');
 }
 
-function renderHist(){
+// ── HISTORY ────────────────────────────────────────────────────────────────
+function renderHistory(){
   const el=document.getElementById('history-content');
-  if(!subs.length){el.innerHTML=`<div style="height:20px"></div><div class="empty">No responses yet.</div>`;return;}
+  if(!subs.length){el.innerHTML=`<div class="text-center py-16 text-on-surface-variant text-sm">No responses yet.</div>`;return;}
   const g=grouped(),weeks=Object.keys(g).sort().reverse();
-  let h=`<div style="height:20px"></div><button class="refresh-btn" onclick="fetchAndRender()">↻ Refresh data</button>`;
+  let h='';
   weeks.forEach(w=>{
     const ws=g[w],j=ws.find(s=>s.who==='julia'),m=ws.find(s=>s.who==='marco');
     const dt=new Date(w).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-    h+=`<div class="week-header"><span style="font-size:16px">📅</span><span class="week-header-text">Week of ${dt}</span>`;
-    if(j&&m){h+=`<span style="margin-left:auto;display:flex;gap:6px"><span class="pill pill-sage">Julia 🥔 ✓</span><span class="pill pill-orange">Marco ✓</span></span>`;}
-    else{h+=`<span style="margin-left:auto"><span class="pill" style="background:var(--surface);color:var(--text-muted)">1 of 2</span></span>`;}
-    h+=`</div>`;
+    h+=`<div class="flex items-center justify-between mb-3 mt-6">
+      <h3 class="text-sm font-headline font-bold text-on-surface">Week of ${dt}</h3>
+      <div class="flex gap-1">
+        ${j?`<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#9FB78F]/20 text-[#9FB78F]">Julia ✓</span>`:''}
+        ${m?`<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#F54927]/20" style="color:#F54927">Marco ✓</span>`:''}
+      </div>
+    </div>`;
     if(!j||!m){
       const done=j||m;
-      h+=`<div class="waiting-card">⏳ Waiting for ${!j?'Julia 🥔':'Marco'} to complete this week.</div>`;
+      h+=`<div class="bg-surface-container rounded-xl p-4 border border-white/5 mb-2 text-sm text-on-surface-variant">⏳ Waiting for ${!j?'Julia':'Marco'} to complete this week.</div>`;
       if(done)Object.keys(Q).forEach(k=>{
         const a=done.answers[k];if(a===undefined||a==='')return;
-        const who=done.who;
-        h+=`<div class="card" style="padding:14px 16px;margin-bottom:10px">
-          <div class="resp-who ${who==='julia'?'sage':'orange'}">${who==='julia'?'Julia 🥔':'Marco'}</div>
-          <div class="resp-q">${Q[k].label}</div>
-          <div class="resp-a">${Q[k].type==='scale'?miniBar(a,who):a}</div>
-        </div>`;
+        h+=histCard(done.who,Q[k].label,Q[k].type,a,done.who);
       });
     }else{
       Object.keys(Q).forEach(k=>{
         const ja=j.answers[k],ma=m.answers[k];
         if((ja===undefined||ja==='')&&(ma===undefined||ma===''))return;
-        h+=`<div class="response-pair">
-          <div class="resp-card sage">
-            <div class="resp-who sage">Julia 🥔</div>
-            <div class="resp-q">${Q[k].label}</div>
-            <div class="resp-a">${ja!==undefined&&ja!==''?(Q[k].type==='scale'?miniBar(ja,'julia'):ja):'—'}</div>
-          </div>
-          <div class="resp-card orange">
-            <div class="resp-who orange">Marco</div>
-            <div class="resp-q">${Q[k].label}</div>
-            <div class="resp-a">${ma!==undefined&&ma!==''?(Q[k].type==='scale'?miniBar(ma,'marco'):ma):'—'}</div>
-          </div>
+        h+=`<div class="grid grid-cols-2 gap-2 mb-2">
+          ${histCard('julia',Q[k].label,Q[k].type,ja,'julia')}
+          ${histCard('marco',Q[k].label,Q[k].type,ma,'marco')}
         </div>`;
       });
     }
@@ -486,75 +605,240 @@ function renderHist(){
   el.innerHTML=h;
 }
 
-function renderTrends(){
-  const el=document.getElementById('trends-content');
+function histCard(who,label,type,val,person){
+  const isJulia=person==='julia';
+  const color=isJulia?'#9FB78F':'#F54927';
+  const bg=isJulia?'bg-[#9FB78F]/10':'bg-[#F54927]/10';
+  const name=isJulia?'Julia 🥔':'Marco';
+  const barHtml=type==='scale'&&val!==undefined&&val!==''?
+    `<div class="mt-2 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+      <div class="h-full rounded-full" style="background:${color};width:${Number(val)*10}%"></div>
+    </div><span class="text-xs font-bold mt-1 block" style="color:${color}">${Number(val).toFixed(1)}/10</span>`:'';
+  return`<div class="${bg} rounded-xl p-3 border border-white/5">
+    <span class="text-[10px] font-bold uppercase tracking-wider" style="color:${color}">${name}</span>
+    <p class="text-[11px] text-on-surface-variant mt-1 mb-1">${label}</p>
+    <p class="text-xs font-medium text-on-surface">${val!==undefined&&val!==''?(type==='text'?val:''):'—'}</p>
+    ${barHtml}
+  </div>`;
+}
+
+// ── METRICS / TRENDS ───────────────────────────────────────────────────────
+function renderMetrics(){
+  document.getElementById('metrics-loading').classList.add('hidden');
+  const show=id=>document.getElementById(id).classList.remove('hidden');
+  const hide=id=>document.getElementById(id).classList.add('hidden');
+  ['metrics-hero','metrics-chart','metrics-breakdown','metrics-tips','metrics-empty'].forEach(hide);
+
   const g=grouped(),weeks=Object.keys(g).sort();
-  if(weeks.length<2){el.innerHTML=`<div style="height:20px"></div><div class="empty">You need at least 2 weeks of data to see trends.<br><br>Keep checking in each week and charts will appear here.</div>`;return;}
-  const labels=weeks.map(w=>new Date(w).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
-  const sk=['connected','communication','overall'];
-  el.innerHTML=`<div style="height:20px"></div><button class="refresh-btn" onclick="fetchAndRender()">↻ Refresh data</button>`
-    +sk.map(k=>`<div class="chart-wrap"><div class="card-label">${Q[k].label}</div><canvas id="ch-${k}" height="160"></canvas></div>`).join('');
-  setTimeout(()=>{
-    sk.forEach(k=>{
-      const cv=document.getElementById('ch-'+k);if(!cv)return;
-      if(charts[k])charts[k].destroy();
-      charts[k]=new Chart(cv,{type:'line',data:{labels,datasets:[
-        {label:'Julia 🥔',data:weeks.map(w=>g[w].find(s=>s.who==='julia')?.answers[k]??null),borderColor:'#9FB78F',backgroundColor:'rgba(159,183,143,0.15)',tension:.4,pointRadius:5,pointBackgroundColor:'#9FB78F',borderWidth:2.5,spanGaps:true},
-        {label:'Marco',data:weeks.map(w=>g[w].find(s=>s.who==='marco')?.answers[k]??null),borderColor:'#F54927',backgroundColor:'rgba(245,73,39,0.1)',tension:.4,pointRadius:5,pointBackgroundColor:'#F54927',borderWidth:2.5,spanGaps:true}
-      ]},options:{responsive:true,maintainAspectRatio:false,
-        scales:{y:{min:0,max:10,ticks:{stepSize:2,font:{size:11,family:'Inter',weight:'600'}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:11,family:'Inter'}},grid:{display:false}}},
-        plugins:{legend:{labels:{font:{size:12,family:'Inter',weight:'600'},boxWidth:12,usePointStyle:true}}}
-      }});
-    });
-  },50);
+  if(!subs.length||weeks.length<1){show('metrics-empty');return;}
+
+  // ── Hero ring: latest combined overall avg ──────────────────────────────
+  const latest=g[weeks[weeks.length-1]]||[];
+  const jL=latest.find(s=>s.who==='julia'),mL=latest.find(s=>s.who==='marco');
+  const jOverall=jL?.answers.overall,mOverall=mL?.answers.overall;
+  const vals=[jOverall,mOverall].filter(v=>v!==undefined&&!isNaN(v)).map(Number);
+  const overallAvg=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+
+  if(overallAvg!==null){
+    const circumference=364.4;
+    const offset=circumference-(circumference*(overallAvg/10));
+    const ring=document.getElementById('score-ring');
+    ring.setAttribute('stroke-dashoffset',offset.toFixed(1));
+    document.getElementById('score-ring-val').textContent=overallAvg.toFixed(1);
+  }
+
+  // Trend vs previous week
+  if(weeks.length>=2){
+    const prev=g[weeks[weeks.length-2]]||[];
+    const pj=prev.find(s=>s.who==='julia'),pm=prev.find(s=>s.who==='marco');
+    const pVals=[pj?.answers.overall,pm?.answers.overall].filter(v=>v!==undefined&&!isNaN(v)).map(Number);
+    const prevAvg=pVals.length?pVals.reduce((a,b)=>a+b,0)/pVals.length:null;
+    if(overallAvg!==null&&prevAvg!==null){
+      const diff=(overallAvg-prevAvg).toFixed(1);
+      const up=overallAvg>=prevAvg;
+      const tl=document.getElementById('score-trend-line');
+      tl.className=`mt-4 font-medium flex items-center gap-1 ${up?'text-[#9FB78F]':'text-rose-accent'}`;
+      tl.querySelector('span.material-symbols-outlined').textContent=up?'trending_up':'trending_down';
+      document.getElementById('score-trend-text').textContent=`${up?'+':''}${diff} from last week`;
+    }
+  }
+
+  // Partner pulse
+  const pulseItems=[
+    {name:'Julia 🥔',color:'#9FB78F',val:jOverall},
+    {name:'Marco',color:'#F54927',val:mOverall}
+  ];
+  document.getElementById('partner-pulse').innerHTML=pulseItems.map(p=>
+    p.val!==undefined&&!isNaN(p.val)?`
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:${p.color}22">
+          <span class="material-symbols-outlined text-sm" style="color:${p.color}">person</span>
+        </div>
+        <span class="text-sm font-medium">${p.name}</span>
+      </div>
+      <span class="font-bold text-lg" style="color:${p.color}">${Number(p.val).toFixed(1)}</span>
+    </div>`:''
+  ).join('');
+  show('metrics-hero');
+
+  // ── Trend chart ─────────────────────────────────────────────────────────
+  if(weeks.length>=2){
+    const labels=weeks.map(w=>new Date(w).toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
+    document.getElementById('chart-labels').innerHTML=
+      [labels[0],labels[Math.floor(labels.length/2)],labels[labels.length-1]].map(l=>`<span>${l}</span>`).join('');
+    setTimeout(()=>{
+      const cv=document.getElementById('chart-overall-trend');if(!cv)return;
+      if(chartInstances['overall-trend'])chartInstances['overall-trend'].destroy();
+      chartInstances['overall-trend']=new Chart(cv,{
+        type:'line',
+        data:{labels,datasets:[
+          {label:'Julia',data:weeks.map(w=>g[w].find(s=>s.who==='julia')?.answers.overall??null),borderColor:'#9FB78F',backgroundColor:'rgba(159,183,143,0.1)',tension:.4,pointRadius:3,pointBackgroundColor:'#9FB78F',borderWidth:2.5,fill:false,spanGaps:true},
+          {label:'Marco',data:weeks.map(w=>g[w].find(s=>s.who==='marco')?.answers.overall??null),borderColor:'#F54927',backgroundColor:'rgba(245,73,39,0.1)',tension:.4,pointRadius:3,pointBackgroundColor:'#F54927',borderWidth:2.5,fill:false,spanGaps:true}
+        ]},
+        options:{responsive:true,maintainAspectRatio:false,
+          scales:{
+            y:{min:0,max:10,ticks:{stepSize:2,color:'rgba(213,227,253,0.4)',font:{size:10}},grid:{color:'rgba(255,255,255,0.05)'},border:{display:false}},
+            x:{display:false,grid:{display:false}}
+          },
+          plugins:{legend:{display:false}}
+        }
+      });
+    },50);
+    show('metrics-chart');
+  }
+
+  // ── Sub-metric breakdown grid ────────────────────────────────────────────
+  const metricDefs=[
+    {key:'connected',label:'Connection',icon:'favorite',color:'#9FB78F'},
+    {key:'communication',label:'Communication',icon:'forum',color:'#F54927'},
+    {key:'overall',label:'Overall',icon:'sentiment_satisfied',color:'#C21445'},
+  ];
+  const breakdownItems=metricDefs.map(m=>{
+    const ja=avg('julia',m.key),ma=avg('marco',m.key);
+    if(!ja&&!ma)return'';
+    const combined=ja&&ma?(ja+ma)/2:ja||ma;
+    // Trend: compare last two weeks
+    let trendHtml='<span class="text-[10px] text-on-surface-variant mb-1">—</span>';
+    if(weeks.length>=2){
+      const lv=g[weeks[weeks.length-1]];const pv=g[weeks[weeks.length-2]];
+      const lAvg=[lv?.find(s=>s.who==='julia')?.answers[m.key],lv?.find(s=>s.who==='marco')?.answers[m.key]].filter(v=>v!==undefined&&!isNaN(v)).map(Number);
+      const pAvg=[pv?.find(s=>s.who==='julia')?.answers[m.key],pv?.find(s=>s.who==='marco')?.answers[m.key]].filter(v=>v!==undefined&&!isNaN(v)).map(Number);
+      if(lAvg.length&&pAvg.length){
+        const lMean=lAvg.reduce((a,b)=>a+b,0)/lAvg.length;
+        const pMean=pAvg.reduce((a,b)=>a+b,0)/pAvg.length;
+        const pct=((lMean-pMean)/pMean*100).toFixed(0);
+        const up=lMean>=pMean;
+        trendHtml=`<span class="text-[10px] mb-1 ${up?'text-green-400':'text-red-400'}">${up?'↑':'↓'} ${Math.abs(pct)}%</span>`;
+      }
+    }
+    return`<div class="bg-surface-container rounded-xl p-4 border border-outline-variant/20">
+      <span class="material-symbols-outlined mb-2 block" style="color:${m.color}">${m.icon}</span>
+      <h4 class="text-sm font-semibold mb-1">${m.label}</h4>
+      <div class="flex items-end gap-2">
+        <span class="text-2xl font-bold">${combined?combined.toFixed(1):'—'}</span>
+        ${trendHtml}
+      </div>
+    </div>`;
+  }).filter(Boolean);
+  document.getElementById('breakdown-grid').innerHTML=breakdownItems.join('');
+  if(breakdownItems.length)show('metrics-breakdown');
+  show('metrics-tips');
 }
 
-async function genSummary(){
-  if(!cfg.anthropicKey){showToast('Add your Anthropic key in Settings');return;}
-  const btn=document.getElementById('ai-btn'),txt=document.getElementById('ai-text');
-  btn.disabled=true;btn.textContent='Generating…';txt.textContent='';
-  const data=subs.slice(-10).map(s=>`${s.who} (${new Date(s.submittedAt).toLocaleDateString('en-GB')}): connected=${s.answers.connected??'?'}/10, communication=${s.answers.communication??'?'}/10, overall=${s.answers.overall??'?'}/10${s.answers.lookForward?`, looking forward to: "${s.answers.lookForward}"`:''}${s.answers.partnerDiff?`, partner feedback: "${s.answers.partnerDiff}"`:''}` ).join('\n');
+async function generateMetricsInsight(){
+  if(!cfg.anthropicKey){showToast('Add your Anthropic API key in Settings');return;}
+  const btn=document.getElementById('metrics-ai-btn'),txt=document.getElementById('metrics-ai-text');
+  btn.textContent='Generating…';btn.disabled=true;txt.innerHTML='';
+  const data=subs.slice(-10).map(s=>
+    `${s.who} (${new Date(s.submittedAt).toLocaleDateString('en-GB')}): connected=${s.answers.connected??'?'}/10, communication=${s.answers.communication??'?'}/10, overall=${s.answers.overall??'?'}/10${s.answers.lookForward?`, looking forward to: "${s.answers.lookForward}"`:''}${s.answers.partnerDiff?`, partner feedback: "${s.answers.partnerDiff}"`:''}` ).join('\n');
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':cfg.anthropicKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:`You are a warm relationship coach. Based on these recent weekly check-in scores for Julia and Marco, write 2-3 warm sentences noting patterns and one gentle, specific suggestion.\n\n${data}`}]})});
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':cfg.anthropicKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:250,messages:[{role:'user',content:`You are a warm relationship coach. Based on these recent weekly check-in scores for Julia and Marco, write 2 bullet points with specific, actionable suggestions based on their lowest-scoring areas. Keep each bullet to one sentence. Format as plain text with a bullet point symbol (•) at the start of each line.\n\n${data}`}]})
+    });
     const d=await r.json();
-    const box=document.getElementById('ai-text');
-    box.innerHTML=`<div class="summary-box"><div class="summary-text">${(d.content?.[0]?.text||'Could not generate insight.').replace(/\n/g,'<br>')}</div></div>`;
-  }catch(e){document.getElementById('ai-text').textContent='Could not reach Anthropic API.';}
-  btn.disabled=false;btn.textContent='✨ Regenerate insight';
+    const text=d.content?.[0]?.text||'Could not generate insight.';
+    txt.innerHTML=text.split('\n').filter(l=>l.trim()).map(l=>`
+      <li class="flex items-center gap-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#C21445] flex-shrink-0"></span>
+        <span>${l.replace(/^[•\-]\s*/,'')}</span>
+      </li>`).join('');
+    txt.className='text-sm text-on-surface-variant leading-relaxed space-y-3';
+    if(txt.innerHTML.includes('<li'))txt.outerHTML;
+    document.getElementById('metrics-ai-text').innerHTML=`<ul class="space-y-3 text-sm text-on-surface-variant">${txt.innerHTML}</ul>`;
+  }catch(e){document.getElementById('metrics-ai-text').textContent='Could not reach Anthropic API.';}
+  btn.textContent='✨ Regenerate';btn.disabled=false;
 }
 
-function dot(n,s,sub){
-  document.getElementById('d'+n+'-dot').className='status-dot dot-'+s;
+// ── AI INSIGHT ─────────────────────────────────────────────────────────────
+async function generateInsight(){
+  if(!cfg.anthropicKey){showToast('Add your Anthropic API key in Settings');return;}
+  const btn=document.getElementById('ai-btn'),txt=document.getElementById('ai-insight-text');
+  btn.textContent='Generating…';btn.disabled=true;
+  txt.textContent='';txt.classList.add('ai-streaming');
+  const data=subs.slice(-10).map(s=>
+    `${s.who} (${new Date(s.submittedAt).toLocaleDateString('en-GB')}): connected=${s.answers.connected??'?'}/10, communication=${s.answers.communication??'?'}/10, overall=${s.answers.overall??'?'}/10${s.answers.lookForward?`, looking forward to: "${s.answers.lookForward}"`:''}${s.answers.partnerDiff?`, partner feedback: "${s.answers.partnerDiff}"`:''}` ).join('\n');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':cfg.anthropicKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:`You are a warm relationship coach. Based on these recent weekly check-in scores for Julia and Marco, write 2-3 warm sentences noting patterns and one gentle, specific suggestion. Be concise.\n\n${data}`}]})
+    });
+    const d=await r.json();
+    txt.textContent=d.content?.[0]?.text||'Could not generate insight.';
+  }catch(e){txt.textContent='Could not reach Anthropic API. Check your key in Settings.';}
+  txt.classList.remove('ai-streaming');
+  btn.textContent='✨ Regenerate';btn.disabled=false;
+}
+
+// ── DIAGNOSTICS ────────────────────────────────────────────────────────────
+function setDot(n,state,sub){
+  const d=document.getElementById('d'+n+'-dot');
+  d.className=`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${state==='ok'?'bg-[#9FB78F]':state==='err'?'bg-rose-accent':state==='spin'?'bg-yellow-400 animate-pulse':'bg-outline'}`;
   if(sub!==undefined)document.getElementById('d'+n+'-sub').textContent=sub;
 }
 async function runDiag(){
-  [1,2,3,4].forEach(n=>dot(n,'wait','checking…'));
-  document.getElementById('raw-wrap').style.display='none';
+  [1,2,3,4].forEach(n=>setDot(n,'wait','checking…'));
+  document.getElementById('raw-wrap').classList.add('hidden');
   const url=document.getElementById('csv-url-input').value.trim();
-  if(!url){dot(1,'err','No URL entered');[2,3,4].forEach(n=>dot(n,'wait','—'));return;}
-  dot(1,'ok',url.slice(0,40)+'…');dot(2,'spin','fetching…');
+  if(!url){setDot(1,'err','No URL entered');[2,3,4].forEach(n=>setDot(n,'wait','—'));return;}
+  setDot(1,'ok',url.slice(0,40)+'…');setDot(2,'spin','fetching…');
   try{
     const result=await new Promise((resolve,reject)=>{Papa.parse(url,{download:true,header:true,skipEmptyLines:true,complete:resolve,error:reject});});
-    dot(2,'ok','Sheet loaded ✓');
+    setDot(2,'ok','Sheet loaded ✓');
     const fields=result.meta.fields||[];
-    dot(3,'ok',`${fields.length} columns found`);
-    document.getElementById('raw-wrap').style.display='block';
+    setDot(3,'ok',`${fields.length} columns found`);
+    document.getElementById('raw-wrap').classList.remove('hidden');
     document.getElementById('raw-box').textContent='Columns:\n'+fields.join('\n')+'\n\nFirst row:\n'+JSON.stringify(result.data[0],null,2);
-    if(!result.data.length){dot(4,'err','No rows found');return;}
-    autoDetect(fields);
-    const parsed=parseRows(result.data);
-    dot(4,'ok',`${parsed.length} responses — Julia: ${parsed.filter(s=>s.who==='julia').length}, Marco: ${parsed.filter(s=>s.who==='marco').length}`);
-    showToast('All checks passed ✓');
-    fetchAndRender();
-  }catch(e){dot(2,'err',String(e));[3,4].forEach(n=>dot(n,'wait','—'));document.getElementById('raw-wrap').style.display='block';document.getElementById('raw-box').textContent=String(e);}
+    if(!result.data.length){setDot(4,'err','No rows found');return;}
+    autoDetect(fields);const parsed=parseRows(result.data);
+    setDot(4,'ok',`${parsed.length} responses — Julia: ${parsed.filter(s=>s.who==='julia').length}, Marco: ${parsed.filter(s=>s.who==='marco').length}`);
+    showToast('All checks passed ✓');fetchAndRender();
+  }catch(e){
+    setDot(2,'err',String(e));[3,4].forEach(n=>setDot(n,'wait','—'));
+    document.getElementById('raw-wrap').classList.remove('hidden');
+    document.getElementById('raw-box').textContent=String(e);
+  }
 }
 
-function showPage(n,b){
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+function switchPage(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+n).classList.add('active');b.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active','text-[#9FB78F]'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.add('text-slate-400'));
+  document.getElementById('page-'+name).classList.add('active');
+  const btn=document.getElementById('nav-'+name);
+  btn.classList.add('active');btn.classList.remove('text-slate-400');
 }
-function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+
+function showToast(m){
+  const t=document.getElementById('toast');t.textContent=m;
+  t.style.transform='translateX(-50%) translateY(0)';
+  setTimeout(()=>t.style.transform='translateX(-50%) translateY(-4rem)',2500);
+}
+
 init();
 </script>
 </body>
