@@ -807,11 +807,14 @@ function drawHeatmapYear(year){
     return'#e8507a';
   }
 
-  const CELL=18; // cell width px
-  const GAP=3;   // gap px
-  const ROW=20;  // row height px
+  // Fit all 53 weeks into ~320px (card width minus padding/row-label)
+  const TOTALW=320;
+  const WEEKS=53;
+  const GAP=2;
+  const CELL=Math.floor((TOTALW-(WEEKS-1)*GAP)/WEEKS); // ~4px
+  const ROW=20;
   const ROWGAP=6;
-  const totalW=yearWeeks.length*(CELL+GAP);
+  const totalW=TOTALW;
 
   // Month letter labels — J F M A M J J A S O N D
   const mLetters=['J','F','M','A','M','J','J','A','S','O','N','D'];
@@ -852,18 +855,15 @@ function drawHeatmapYear(year){
     if(mVal!==null){mTotal+=mVal;mCount++;}
     const jTip=jVal!==null?`Julia week ${w.wk}: ${jVal.toFixed(1)}/10`:`Julia — no data (${w.wk})`;
     const mTip=mVal!==null?`Marco week ${w.wk}: ${mVal.toFixed(1)}/10`:`Marco — no data (${w.wk})`;
-    const isFut=w.date>today;
-    const jCol=isFut?'transparent':scoreColor(jVal);
-    const mCol=isFut?'transparent':scoreColor(mVal);
     const emptyStyle='background:#1c2b3e;border:1px solid rgba(255,255,255,0.07)';
-    const jStyle=isFut?'background:transparent':(jVal===null?emptyStyle:`background:${jCol}`);
-    const mStyle=isFut?'background:transparent':(mVal===null?emptyStyle:`background:${mCol}`);
+    const jStyle=jVal===null?emptyStyle:`background:${scoreColor(jVal)}`;
+    const mStyle=mVal===null?emptyStyle:`background:${scoreColor(mVal)}`;
     gridHtml+=`<div style="position:absolute;left:${x}px;top:0;width:${CELL}px;height:${ROW}px;border-radius:2px;${jStyle}" title="${jTip}" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1"></div>`;
     gridHtml+=`<div style="position:absolute;left:${x}px;top:${ROW+ROWGAP}px;width:${CELL}px;height:${ROW}px;border-radius:2px;${mStyle}" title="${mTip}" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1"></div>`;
   });
   gridHtml+=`</div>`;
 
-  document.getElementById('heatmap-grid').innerHTML=`<div style="padding-left:20px;overflow-x:auto;padding-bottom:4px"><div style="height:${ROW*2+ROWGAP+4}px;position:relative;min-width:${totalW}px">${gridHtml}</div></div>`;
+  document.getElementById('heatmap-grid').innerHTML=`<div style="padding-left:20px;padding-bottom:4px"><div style="height:${ROW*2+ROWGAP+4}px;position:relative;min-width:${totalW}px">${gridHtml}</div></div>`;
 
   const jAvg=jCount?(jTotal/jCount).toFixed(1):'—';
   const mAvg=mCount?(mTotal/mCount).toFixed(1):'—';
