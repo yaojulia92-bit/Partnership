@@ -807,17 +807,21 @@ function drawHeatmapYear(year){
     return'#e8507a';
   }
 
-  const CELL=14; // cell width px
+  const CELL=18; // cell width px
   const GAP=3;   // gap px
-  const ROW=10;  // row height px
-  const ROWGAP=4;
+  const ROW=20;  // row height px
+  const ROWGAP=6;
   const totalW=yearWeeks.length*(CELL+GAP);
 
   // Month letter labels — J F M A M J J A S O N D
   const mLetters=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  // Use Thursday of each week as representative day for month assignment
+  // (ISO standard: the week belongs to whichever month its Thursday falls in)
   const monthFirstCol={};
   yearWeeks.forEach((w,i)=>{
-    const m=w.date.getMonth();
+    const thu=new Date(w.date);thu.setDate(thu.getDate()+3);
+    if(thu.getFullYear()!==year)return;
+    const m=thu.getMonth();
     if(monthFirstCol[m]===undefined)monthFirstCol[m]=i;
   });
 
@@ -851,8 +855,11 @@ function drawHeatmapYear(year){
     const isFut=w.date>today;
     const jCol=isFut?'transparent':scoreColor(jVal);
     const mCol=isFut?'transparent':scoreColor(mVal);
-    gridHtml+=`<div style="position:absolute;left:${x}px;top:0;width:${CELL}px;height:${ROW}px;border-radius:2px;background:${jCol}" title="${jTip}" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1"></div>`;
-    gridHtml+=`<div style="position:absolute;left:${x}px;top:${ROW+ROWGAP}px;width:${CELL}px;height:${ROW}px;border-radius:2px;background:${mCol}" title="${mTip}" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1"></div>`;
+    const emptyStyle='background:#1c2b3e;border:1px solid rgba(255,255,255,0.07)';
+    const jStyle=isFut?'background:transparent':(jVal===null?emptyStyle:`background:${jCol}`);
+    const mStyle=isFut?'background:transparent':(mVal===null?emptyStyle:`background:${mCol}`);
+    gridHtml+=`<div style="position:absolute;left:${x}px;top:0;width:${CELL}px;height:${ROW}px;border-radius:2px;${jStyle}" title="${jTip}" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1"></div>`;
+    gridHtml+=`<div style="position:absolute;left:${x}px;top:${ROW+ROWGAP}px;width:${CELL}px;height:${ROW}px;border-radius:2px;${mStyle}" title="${mTip}" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1"></div>`;
   });
   gridHtml+=`</div>`;
 
