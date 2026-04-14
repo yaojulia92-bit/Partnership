@@ -2,7 +2,7 @@
 <html class="dark" lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -91,7 +91,7 @@ h1,h2,h3,.headline{font-family:'Manrope',sans-serif}
 <body class="text-on-surface pb-32 bg-[#0D1C2F]">
 
 <!-- TOP BAR -->
-<header class="flex justify-between items-center px-6 py-4 w-full z-50 sticky top-0 bg-[#0D1C2F] border-b border-white/5">
+<header class="flex justify-between items-center px-6 py-4 w-full z-50 sticky top-0 bg-[#0D1C2F] border-b border-white/5" style="padding-top:max(1rem,env(safe-area-inset-top))">
   <div class="flex items-center gap-3">
     <span class="material-symbols-outlined text-primary">favorite</span>
     <span class="font-headline font-extrabold text-[#9FB78F] text-lg tracking-tight">Partnership Check-in</span>
@@ -411,7 +411,7 @@ h1,h2,h3,.headline{font-family:'Manrope',sans-serif}
 </div>
 
 <!-- BOTTOM NAV -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 py-3 bg-slate-900 border-t border-slate-700 shadow-lg rounded-t-lg">
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-2 bg-slate-900 border-t border-slate-700 shadow-lg rounded-t-lg" style="padding-top:0.75rem;padding-bottom:max(0.75rem,env(safe-area-inset-bottom))">
   <button onclick="switchPage('dashboard')" class="nav-item active flex flex-col items-center justify-center px-3 py-1 transition-all duration-200" id="nav-dashboard">
     <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">dashboard</span>
     <span class="text-xs font-medium font-label">Dashboard</span>
@@ -1087,7 +1087,7 @@ function renderWishes(){
   el.innerHTML=filtered.map(w=>`
     <div class="flex items-center gap-3 bg-surface-container rounded-xl px-4 py-3 border border-white/5 group transition-opacity ${w.done?'opacity-60':''}">
       <button onclick="toggleWish(${w.id})" class="w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${w.done?'bg-[#C21445] border-[#C21445]':'border-outline hover:border-[#C21445]'}">
-        ${w.done?'<span class="material-symbols-outlined text-white" style="font-size:14px;font-variation-settings:'FILL' 1">check</span>':''}
+        ${w.done?'<span class="material-symbols-outlined text-white" style="font-size:14px">check</span>':''}
       </button>
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium text-on-surface ${w.done?'line-through text-on-surface-variant':''} truncate">${w.text}</p>
